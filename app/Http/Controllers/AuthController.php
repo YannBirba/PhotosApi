@@ -45,7 +45,7 @@ class AuthController extends Controller
         ],Response::HTTP_ACCEPTED)->withCookie($cookie);
     }
 
-    public function islogin() :bool{
+    public function isloggedin() :bool{
         $token = Cookie::get('jwt');
         if(isset($token)){
             return true;
