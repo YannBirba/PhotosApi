@@ -35,7 +35,7 @@ class AuthController extends Controller
             $token = $user->createToken('token')->plainTextToken;
             $cookie = cookie('jwt', $token, 60*24);
             return response([
-                'message'=> 'Connexion réussie!',
+                'message'=> 'Connexion réussie!'
             ],Response::HTTP_ACCEPTED)->withCookie($cookie);
     }
     public function logout(){
@@ -43,5 +43,19 @@ class AuthController extends Controller
         return response([
             'message'=> 'Déconnexion réussie!'
         ],Response::HTTP_ACCEPTED)->withCookie($cookie);
+    }
+
+    public function islogin(){
+        $token = Cookie::get('jwt');
+        if(isset($token)){
+            return response([
+                'message'=> 'L\'utilisateur est connecté'
+            ],Response::HTTP_OK);
+        }
+        else{
+            return response([
+                'message'=> 'L\'utilisateur non connecté'
+            ],Response::HTTP_UNAUTHORIZED);
+        }
     }
 }
