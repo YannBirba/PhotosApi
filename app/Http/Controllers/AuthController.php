@@ -45,17 +45,13 @@ class AuthController extends Controller
         ],Response::HTTP_ACCEPTED)->withCookie($cookie);
     }
 
-    public function islogin(){
+    public function islogin() :bool{
         $token = Cookie::get('jwt');
         if(isset($token)){
-            return response([
-                'message'=> 'L\'utilisateur est connecté'
-            ],Response::HTTP_OK);
+            return true;
         }
         else{
-            return response([
-                'message'=> 'L\'utilisateur non connecté'
-            ],Response::HTTP_UNAUTHORIZED);
+            return false;
         }
     }
 }
