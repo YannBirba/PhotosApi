@@ -20,6 +20,7 @@ class AuthController extends Controller
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
+            'is_admin' => $request->input('is_admin'),
         ]);
         return response([
             'message'=> 'Inscription réussie!'
