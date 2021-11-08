@@ -46,13 +46,19 @@ class AuthController extends Controller
         ],Response::HTTP_ACCEPTED)->withCookie($cookie);
     }
 
-    public function isloggedin() :bool{
-        $token = Cookie::get('jwt');
-        if(isset($token)){
-            return true;
+    public function isloggedin(){
+        $cookie = Cookie::get('jwt');
+        if(isset($cookie)){
+            return response([
+                'message'=> 'connecté',
+                'is_logged_in' => true,
+            ],Response::HTTP_ACCEPTED)->withCookie($cookie);
         }
         else{
-            return false;
+            return response([
+                'message'=> 'déconnecté',
+                'is_logged_in' => false,
+            ],Response::HTTP_ACCEPTED);
         }
     }
 }
