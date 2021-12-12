@@ -127,7 +127,7 @@ class GroupController extends Controller
             'event_id' => $request->input('event_id'),
         ]);
         return response([
-            'message'=> 'Inscription réussie!'
+            'message'=> 'L\'événement a bien été ajouté au groupe',
         ],Response::HTTP_ACCEPTED);
     }
 
