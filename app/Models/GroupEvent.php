@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Group;
 
-class Event extends Model
+class GroupEvent extends Model
 {
     use HasFactory;
+
+    protected $table = "group_event";
 
      /**
      * The attributes that are mass assignable.
@@ -16,18 +18,8 @@ class Event extends Model
      * @var string[]
      */
     protected $fillable = [
-        'name',
-        'description',
-        'location',
-        'image',
-        'year',
-        'start_date',
-        'end_date',
+        'group_id',
+        'event_id',
     ];
-
-    public function groups()
-    {
-        return $this->belongsToMany(Group::class, GroupEvent::class)->withTimestamps();
-    }
 
 }

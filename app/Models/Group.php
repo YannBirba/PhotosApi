@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Event;
+use App\Models\GroupEvent;
 class Group extends Model
 {
     use HasFactory;
@@ -21,10 +22,10 @@ class Group extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->hasMany(User::class);
     }
     public function events()
     {
-        return $this->belongsToMany(Event::class, 'group_event');
+        return $this->belongsToMany(Event::class, GroupEvent::class)->withTimestamps();
     }
 }

@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\Group as ResourcesGroup;
 use App\Models\Group;
+use App\Models\GroupEvent;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class GroupController extends Controller
 {
@@ -99,32 +100,46 @@ class GroupController extends Controller
             );
         }
     }
-
+    
+    /**
+     * Method get all events from a group
+     *
+     * @param int $group_id [Group id]
+     *
+     * @return array
+     */
     public function events(int $group_id)
     {
         return Group::find($group_id)->events;
     }
 
-     /**
-     * Search the specified group from storage.
+        /**
+     * Method get all events from a group
      *
-     * @param  \App\Models\Group  $group
-     * @return \Illuminate\Http\Response
+     * @param int $group_id [Group id]
+     *
+     * @return array
      */
-    public function search()
+    public function addevent(Request $request)
     {
-        // $data = $_GET['title'];
-        // if($group = Group::where('title', 'like', "%{$data}%")->get()){
-        //     return response()->json([
-        //         'data' => $groups
-        //     ],200
-        // ); 
-        // }
-        // else{
-        //     return response()->json([
-        //         'error' => 'Erreur lors de la recherche'
-        //     ],500
-        //     ); 
-        // }
+        $group_event = GroupEvent::create([
+            'group_id' => $request->input('group_id'),
+            'event_id' => $request->input('event_id'),
+        ]);
+        return response([
+            'message'=> 'Inscription réussie!'
+        ],Response::HTTP_ACCEPTED);
+    }
+
+    /**
+     * Method get all users from a group
+     *
+     * @param int $group_id [Group id]
+     *
+     * @return array
+     */
+    public function users(int $group_id)
+    {
+        return Group::find($group_id)->users;
     }
 }

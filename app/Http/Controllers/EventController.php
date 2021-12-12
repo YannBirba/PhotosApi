@@ -15,7 +15,18 @@ class EventController extends Controller
      */
     public function index()
     {
-        return Event::all();
+        //return all events ordered by start_date descending
+        return Event::orderBy('start_date', 'desc')->get();
+    }
+
+    /**
+     * Display a listing of events of the actual year.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function indexactualyear()
+    {
+        return Event::orderBy('start_date', 'desc')->where('year', date('Y'))->get();
     }
 
     /**
@@ -98,7 +109,14 @@ class EventController extends Controller
             );
         }
     }
-
+    
+    /**
+     * Method get all groups of an event
+     *
+     * @param int $event_id [Event id]
+     *
+     * @return array
+     */
     public function groups(int $event_id)
     {
         return Event::find($event_id)->groups;

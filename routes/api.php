@@ -18,4 +18,6 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::apiResource('group',GroupController::class);
     Route::get('group-events/{id}',[GroupController::class, 'events']);
     Route::get('event-groups/{id}',[EventController::class, 'groups']);
+    Route::get('group-users/{id}',[GroupController::class, 'users']);
+    Route::get('eventyear',[EventController::class, 'indexactualyear']);
 });

@@ -21,7 +21,7 @@ class AuthController extends Controller
     }
     public function register(Request $request){
         $user = User::create([
-            'group_id' => $request->group_id,
+            'group_id' => $request->input('group_id'),
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
@@ -81,7 +81,12 @@ class AuthController extends Controller
             ],Response::HTTP_ACCEPTED);
         }
     }
-
+    
+    /**
+     * Method get events of the user group of connected user
+     *
+     * @return array
+     */
     public function events(){
         $user = Auth::user();
         $group_id = $user->group_id;
