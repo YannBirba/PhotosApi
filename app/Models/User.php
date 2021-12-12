@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+use App\Models\Group;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -18,6 +18,7 @@ class User extends Authenticatable
      * @var string[]
      */
     protected $fillable = [
+        'group_id',
         'name',
         'email',
         'password',
@@ -32,4 +33,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
     ];
+    public function group()
+    {
+        return $this->hasOne(Group::class);
+    }
 }
