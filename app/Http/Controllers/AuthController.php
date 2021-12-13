@@ -20,16 +20,23 @@ class AuthController extends Controller
         return $user;
     }
     public function register(Request $request){
-        $user = User::create([
+        if ($request->input('is_admin') === null || !$request->input('is_admin')) {
+            $is_admin = false;
+        }
+        else{
+            $is_admin = $request->input('is_admin');
+        }
+        User::create([
             'group_id' => $request->input('group_id'),
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
-            'is_admin' => $request->input('is_admin'),
+
+            'is_admin' => $is_admin,
         ]);
         return response([
             'message'=> 'Inscription réussie!'
-        ],Response::HTTP_ACCEPTED);
+        ],Response::HTTP_CREATED);
     }    
     /**
      * Method to login a user

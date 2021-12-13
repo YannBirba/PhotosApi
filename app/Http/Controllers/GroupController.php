@@ -113,24 +113,6 @@ class GroupController extends Controller
         return Group::find($group_id)->events;
     }
 
-        /**
-     * Method get all events from a group
-     *
-     * @param int $group_id [Group id]
-     *
-     * @return array
-     */
-    public function addevent(Request $request)
-    {
-        $group_event = GroupEvent::create([
-            'group_id' => $request->input('group_id'),
-            'event_id' => $request->input('event_id'),
-        ]);
-        return response([
-            'message'=> 'L\'événement a bien été ajouté au groupe',
-        ],Response::HTTP_ACCEPTED);
-    }
-
     /**
      * Method get all users from a group
      *
