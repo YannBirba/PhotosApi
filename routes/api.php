@@ -17,9 +17,9 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('logout',[AuthController::class, 'logout']);
     Route::apiResource('event',EventController::class);
     Route::apiResource('group',GroupController::class);
-    Route::get('group-events/{id}',[GroupController::class, 'events']);
-    Route::get('event-groups/{id}',[EventController::class, 'groups']);
-    Route::get('group-users/{id}',[GroupController::class, 'users']);
-    Route::get('eventyear',[EventController::class, 'indexactualyear']);
+    Route::get('/group/events/{group_id}',[GroupController::class, 'events']);
+    Route::get('/event/groups/{event_id}',[EventController::class, 'groups']);
+    Route::get('/group/users/{group_id}',[GroupController::class, 'users']);
+    Route::get('/event/actualyear',[EventController::class, 'indexactualyear']);
     Route::apiResource('group-event',GroupEventController::class);
 });

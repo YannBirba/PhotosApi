@@ -95,16 +95,24 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        if($event->delete()){
-            return response()->json([
-                'success' => 'Evénement supprimé avec succès'
-            ],200
-            );
+        if ($event->groups()->detach()) {
+            if($event->delete()){
+                return response()->json([
+                    'success' => 'Evénement supprimé avec succès'
+                ],200
+                );
+            }
+            else
+            {
+                return response()->json([
+                    'error' => 'Erreur lors de la suppression de l\'événement'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
+        else {
             return response()->json([
-                'error' => 'Erreur lors de la suppression de l\'evénement'
+                'error' => 'Erreur lors du détachement des groupes liés a l\'événement'
                 ] ,500
             );
         }

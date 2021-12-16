@@ -86,16 +86,32 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        if($group->delete()){
-            return response()->json([
-                'success' => 'Groupe supprimé avec succès'
-            ],200
-            );
+        if ($group->events()->detach()) {
+            if ($group->users()->delete()) {
+                if($group->delete()){
+                    return response()->json([
+                        'success' => 'Groupe supprimé avec succès'
+                    ],200
+                    );
+                }
+                else
+                {
+                    return response()->json([
+                        'error' => 'Erreur lors de la suppression du groupe'
+                        ] ,500
+                    );
+                }
+            }
+            else {
+                return response()->json([
+                    'error' => 'Erreur lors de la suppression des utilisateurs rattachés au groupe'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
+        else {
             return response()->json([
-                'error' => 'Erreur lors de la suppression du groupe'
+                'error' => 'Erreur lors du détachement des événements liés au groupe'
                 ] ,500
             );
         }
