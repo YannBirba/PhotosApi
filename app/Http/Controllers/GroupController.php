@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\Group as ResourcesGroup;
+use App\Models\Event;
 use App\Models\Group;
 use App\Models\GroupEvent;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
 use Symfony\Component\HttpFoundation\Response;
 
 class GroupController extends Controller
@@ -139,5 +141,41 @@ class GroupController extends Controller
     public function users(int $group_id)
     {
         return Group::find($group_id)->users;
+    }
+
+    public function event(int $group_id, Request $request)
+    {
+        $event_id = ($request->input('event_id'));
+        if ($event_id !== null && $event_id) {
+            $group = Group::find($group_id);
+            if ($group && $group !== null) {
+                if($group->events()->attach($event_id))
+                {
+                    $event = Event::find($event_id);
+                    return response()->json([
+                        'message' => 'L\'événement '. $event->name . 'a bien été lié au groupe '. $group->name . '.'
+                        ] ,500
+                    );
+                }
+                else{
+                    return response()->json([
+                        'error' => 'Veuillez renseigner un événement dans la requère'
+                        ] ,500
+                    );
+                }
+            }
+            else{
+                return response()->json([
+                    'error' => 'Aucun groupe n\'a été trouvé pour l\'identifiant renseigné'
+                    ] ,500
+                );
+            }
+        }
+        else{
+            return response()->json([
+                'error' => 'Veuillez renseigner un événement dans la requère'
+                ] ,500
+            );
+        }
     }
 }
