@@ -142,7 +142,15 @@ class GroupController extends Controller
     {
         return Group::find($group_id)->users;
     }
-
+    
+    /**
+     * Method event
+     *
+     * @param int $group_id [explicite description]
+     * @param Request $request [explicite description]
+     *
+     * @return Json
+     */
     public function event(int $group_id, Request $request)
     {
         $event_id = ($request->input('event_id'));
@@ -159,7 +167,7 @@ class GroupController extends Controller
                 }
                 else{
                     return response()->json([
-                        'error' => 'Veuillez renseigner un événement dans la requère'
+                        'error' => 'Veuillez renseigner un événement dans la requète'
                         ] ,500
                     );
                 }
@@ -173,7 +181,7 @@ class GroupController extends Controller
         }
         else{
             return response()->json([
-                'error' => 'Veuillez renseigner un événement dans la requère'
+                'error' => 'Veuillez renseigner un événement dans la requète'
                 ] ,500
             );
         }

@@ -3,7 +3,6 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GroupController;
-use App\Http\Controllers\GroupEventController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,5 +20,4 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/event/groups/{event_id}',[EventController::class, 'groups']);
     Route::get('/group/users/{group_id}',[GroupController::class, 'users']);
     Route::get('/event/actualyear',[EventController::class, 'indexactualyear']);
-    Route::apiResource('group-event',GroupEventController::class);
 });

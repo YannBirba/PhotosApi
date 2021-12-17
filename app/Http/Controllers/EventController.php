@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Resources\Event as ResourcesEvent;
+use App\Models\Group;
 
 class EventController extends Controller
 {
@@ -151,5 +152,49 @@ class EventController extends Controller
         //     ],500
         //     ); 
         // }
+    }
+
+     /**
+     * Method event
+     *
+     * @param int $event_id [explicite description]
+     * @param Request $request [explicite description]
+     *
+     * @return Json
+     */
+    public function group(int $event_id, Request $request)
+    {
+        $group_id = ($request->input('group_id'));
+        if ($group_id !== null && $group_id) {
+            $event = Event::find($event_id);
+            if ($event && $event !== null) {
+                if($event->groups()->attach($group_id))
+                {
+                    $group = Group::find($group_id);
+                    return response()->json([
+                        'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
+                        ] ,500
+                    );
+                }
+                else{
+                    return response()->json([
+                        'error' => 'Veuillez renseigner un groupe dans la requète'
+                        ] ,500
+                    );
+                }
+            }
+            else{
+                return response()->json([
+                    'error' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné'
+                    ] ,500
+                );
+            }
+        }
+        else{
+            return response()->json([
+                'error' => 'Veuillez renseigner un groupe dans la requète'
+                ] ,500
+            );
+        }
     }
 }
