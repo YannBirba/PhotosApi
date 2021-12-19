@@ -60,6 +60,8 @@ class SpecialMigrate extends Command
         $to_migrate_before = [ 
             '2021_12_11_180332_create_groups_table',
             '2021_12_11_201430_create_events_table',
+            '2021_12_19_204544_create_images_table',
+            '2021_12_19_211846_add_image_column_in_event_table',
         ];
         if ($to_migrate_before && count($to_migrate_before) > 0 && $to_migrate_before != null) {
             foreach($to_migrate_before as $migration)

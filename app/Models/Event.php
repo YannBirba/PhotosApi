@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Group;
+use App\Models\Image;
 
 class Event extends Model
 {
@@ -17,9 +18,9 @@ class Event extends Model
      */
     protected $fillable = [
         'name',
+        'image_id',
         'description',
         'location',
-        'image',
         'year',
         'start_date',
         'end_date',
@@ -27,7 +28,16 @@ class Event extends Model
 
     public function groups()
     {
-        return $this->belongsToMany(Group::class, GroupEvent::class)->withTimestamps();
+        return $this->belongsToMany(Group::class,'group_event');
     }
 
+    public function image()
+    {
+        return $this->belongsTo(Image::class)->withTimestamps();
+    }
+
+    public function images()
+    {
+        return $this->hasMany(Image::class);
+    }
 }
