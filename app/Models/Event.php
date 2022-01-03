@@ -28,7 +28,7 @@ class Event extends Model
 
     public function groups()
     {
-        return $this->belongsToMany(Group::class,'group_event');
+        return $this->belongsToMany(Group::class,'group_event')->withTimestamps();
     }
 
     public function image()
@@ -38,6 +38,6 @@ class Event extends Model
 
     public function images()
     {
-        return $this->hasMany(Image::class);
+        return $this->hasMany(Image::class)->withTimestamps();
     }
 }
