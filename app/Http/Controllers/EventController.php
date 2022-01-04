@@ -6,6 +6,7 @@ use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Resources\Event as ResourcesEvent;
 use App\Models\Group;
+use App\Models\Image;
 
 class EventController extends Controller
 {
@@ -193,6 +194,38 @@ class EventController extends Controller
         else{
             return response()->json([
                 'error' => 'Veuillez renseigner un groupe dans la requète'
+                ] ,500
+            );
+        }
+    }
+
+     /**
+     * Method get all images from an event
+     *
+     * @param int $event_id [Event id]
+     *
+     * @return array
+     */
+    public function images(int $event_id)
+    {
+        return Event::find($event_id)->images;
+    }
+
+    /**
+     * Method get image of an event
+     *
+     * @param int $event_id [Event id]
+     *
+     * @return array
+     */
+    public function image(int $event_id)
+    {
+        if($image = Event::find($event_id)->image){
+            return $image;
+        }
+        else {
+            return response()->json([
+                'error' => 'L\'image de l\'événement n\'a pas été trouvée'
                 ] ,500
             );
         }

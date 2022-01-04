@@ -28,16 +28,16 @@ class Event extends Model
 
     public function groups()
     {
-        return $this->belongsToMany(Group::class,'group_event')->withTimestamps();
+        return $this->belongsToMany(Group::class,'group_event');
     }
 
     public function image()
     {
-        return $this->belongsTo(Image::class)->withTimestamps();
+        return $this->belongsTo(Image::class);
     }
 
     public function images()
     {
-        return $this->hasMany(Image::class)->withTimestamps();
+        return $this->hasMany(Image::class);
     }
 }

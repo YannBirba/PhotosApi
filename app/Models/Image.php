@@ -26,6 +26,6 @@ class Image extends Model
 
     public function event()
     {
-        return $this->belongsTo(Event::class)->withTimestamps();
+        return $this->belongsTo(Event::class);
     }
 }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Resources\Group as ResourcesGroup;
 use App\Models\Event;
 use App\Models\Group;
-use App\Models\GroupEvent;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Request as HttpFoundationRequest;
 use Symfony\Component\HttpFoundation\Response;

@@ -14,7 +14,7 @@ class AddImageColumnInEventTable extends Migration
     public function up()
     {
         Schema::table('events', function (Blueprint $table) {
-            $table->unsignedBigInteger('image_id')->after('id');
+            $table->unsignedBigInteger('image_id')->after('id')->nullable();
             $table->foreign('image_id')->references('id')->on('images');
         });
     }

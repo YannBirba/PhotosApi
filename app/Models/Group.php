@@ -22,10 +22,10 @@ class Group extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class)->withTimestamps();
+        return $this->hasMany(User::class);
     }
     public function events()
     {
-        return $this->belongsToMany(Event::class,'group_event')->withTimestamps();
+        return $this->belongsToMany(Event::class,'group_event');
     }
 }
