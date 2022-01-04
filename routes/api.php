@@ -29,3 +29,10 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/event/group/{event_id}',[GroupController::class, 'group']);
     Route::get('/image/event',[ImageController::class, 'event']);
 });
+/*
+Exemples de crud images
+
+https://enlear.academy/crud-example-with-image-upload-in-laravel-8-d35cb95575f2 
+
+https://laratutorials.com/laravel-8-crud-with-image-upload-tutorial/
+*/
