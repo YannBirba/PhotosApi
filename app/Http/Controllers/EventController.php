@@ -169,20 +169,12 @@ class EventController extends Controller
         if ($group_id !== null && $group_id) {
             $event = Event::find($event_id);
             if ($event && $event !== null) {
-                if($event->groups()->attach($group_id))
-                {
-                    $group = Group::find($group_id);
-                    return response()->json([
-                        'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
-                        ] ,500
-                    );
-                }
-                else{
-                    return response()->json([
-                        'error' => 'Veuillez renseigner un groupe dans la requète'
-                        ] ,500
-                    );
-                }
+                $event->groups()->attach($group_id);
+                $group = Group::find($group_id);
+                return response()->json([
+                    'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
+                    ] ,500
+                );
             }
             else{
                 return response()->json([

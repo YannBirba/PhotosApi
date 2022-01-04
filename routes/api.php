@@ -25,5 +25,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/event/image/{event_id}',[EventController::class, 'image']);
     Route::get('/group/users/{group_id}',[GroupController::class, 'users']);
     Route::get('/event/actualyear',[EventController::class, 'indexactualyear']);
+    Route::post('/group/event/{group_id}',[GroupController::class, 'event']);
+    Route::post('/event/group/{event_id}',[GroupController::class, 'group']);
     Route::get('/image/event',[ImageController::class, 'event']);
 });
