@@ -17,11 +17,12 @@ class CreateImagesTable extends Migration
             $table->id();
             $table->unsignedBigInteger('event_id');
             $table->foreign('event_id')->references('id')->on('events');
-            $table->string('path');
-            $table->string('name');
-            $table->string('extension');
-            $table->string('alt');
-            $table->string('title');
+            $table->string('path')->nullable();
+            $table->string('name')->nullable();
+            $table->string('extension')->nullable();
+            $table->string('alt')->nullable();
+            $table->string('title')->nullable();
+            $table->string('file');
             $table->timestamps();
         });
     }

@@ -6,10 +6,14 @@ use App\Models\Image;
 use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class ImageController extends Controller
 {
-        /**
+    private string $storageBasePath = '/public/images/events/';
+
+    /**
      * Display a listing of the images.
      *
      * @return \Illuminate\Http\Response
@@ -27,7 +31,28 @@ class ImageController extends Controller
      */
     public function store(Request $request)
     {
-        if(Image::create($request->all())){
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:8192',
+        ]);
+        $input = $request->all();
+        if ($file = $request->file('file')) {
+            $fileDestinationPath = $this->storageBasePath . date('Y') . '/' . Event::find($request->input('event_id'))->name;
+            $imageFile = $file->getClientOriginalName() . "." . $file->getClientOriginalExtension();
+            $file->move($fileDestinationPath, $imageFile);
+            $input['file'] = "$imageFile";
+        }
+
+        if(
+            Image::create([
+                'event_id' => $request->input('event_id'),
+                'path' => $fileDestinationPath,
+                'name' => $file->getClientOriginalName(),
+                'extension' => $file->getClientOriginalExtension(),
+                'alt' => $request->input('alt'),
+                'title' => $request->input('title'),
+                'file' => $input['file']
+        ])
+        ){
             return response()->json([
                 'success' => 'Image créée avec succès'
             ],200
@@ -121,17 +146,6 @@ class ImageController extends Controller
         ); 
         }
     }
-    //  /**
-    //  * Method get event from an image
-    //  *
-    //  * @param int $image_id [Image id]
-    //  *
-    //  * @return array
-    //  */
-    // public function event(int $image_id)
-    // {
-    //     return Image::find($image_id)->event;
-    // }
 
     /**
      * Method get event of an image
