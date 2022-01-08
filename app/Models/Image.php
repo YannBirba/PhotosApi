@@ -17,9 +17,11 @@ class Image extends Model
      */
     protected $fillable = [
         'event_id',
+        'path',
+        'name',
+        'extension',
         'alt',
         'title',
-        'file'
     ];
 
     public function event()
