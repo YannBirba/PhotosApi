@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Image;
 use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
-    private string $storageBasePath = 'storage/images/events/';
+    private string $storageBasePath = 'images/events/';
 
     /**
      * Display a listing of the images.
@@ -39,8 +39,8 @@ class ImageController extends Controller
         ]);
         if ($file = $request->file('file')) {
             $fileDestinationPath = $this->storageBasePath . Event::find($request->input('event_id'))->year . '/' . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '/';
-            if (!File::exists($fileDestinationPath . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '-' . $file->getClientOriginalName())) {
-                $file->move($fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '-' . $file->getClientOriginalName());
+            if (!File::exists($fileDestinationPath . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName())) {
+                $file->move('storage/'.$fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName());
                 if(
                     Image::create([
                         'event_id' => $request->input('event_id'),
@@ -190,23 +190,31 @@ class ImageController extends Controller
      */
     public function file(int $image_id)
     { 
-        if($image = Image::find($image_id)){
-            // return response()->json([
-            //     'data' => $image->path . $image->name . '.' . $image->extension,
-            // ],200
-            // );
-            // return response()->download($image->path . $image->name . '.' . $image->extension);
-            $pathToImage = $image->path . $image->name . '.' . $image->extension;
-            $pathToImage = str_replace('&quot;', "", $pathToImage);
-            Storage::exists($pathToImage);
-            return Storage::download($image->path . $image->name . '.' . $image->extension);
+        if($image = Image::find($image_id)){          
+            //php artisan storage:link before using this method
+            // if (Storage::exists($image->path . $image->name . '.' . $image->extension)) {
+            //     return response()->json([
+            //         'teest'=> 'test'
+            //     ]);
+                return Storage::get($image->path . $image->name . '.' . $image->extension);
+            // }
+            // else{
+            //     throw new FileNotFoundException('File not found');
+                
+            // }
+            // else {
+            //     return response()->json([
+            //         'error' => 'L\'image n\'a pas été trouvée'
+            //         ] ,500
+            //     );
+            // }
         }
-        else {
-            return response()->json([
-                'error' => 'L\'image n\'a pas été trouvée'
-                ] ,500
-            );
-        }
+        // else {
+        //     return response()->json([
+        //         'error' => 'L\'image n\'a pas été trouvée'
+        //         ] ,500
+        //     );
+        // }
     }
     
     /**
