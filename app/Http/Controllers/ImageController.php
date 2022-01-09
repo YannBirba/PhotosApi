@@ -7,9 +7,12 @@ use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+
 class ImageController extends Controller
 {
-    private string $storageBasePath = 'images/events/';
+    private string $storageBasePath = 'storage/images/events/';
 
     /**
      * Display a listing of the images.
@@ -176,6 +179,35 @@ class ImageController extends Controller
             );
         }
     }
+
+        
+    /**
+     * Method file [Get file of an image]
+     *
+     * @param int $image_id [Image id]
+     *
+     * @return Response
+     */
+    public function file(int $image_id)
+    { 
+        if($image = Image::find($image_id)){
+            // return response()->json([
+            //     'data' => $image->path . $image->name . '.' . $image->extension,
+            // ],200
+            // );
+            // return response()->download($image->path . $image->name . '.' . $image->extension);
+            $pathToImage = $image->path . $image->name . '.' . $image->extension;
+            $pathToImage = str_replace('&quot;', "", $pathToImage);
+            Storage::exists($pathToImage);
+            return Storage::download($image->path . $image->name . '.' . $image->extension);
+        }
+        else {
+            return response()->json([
+                'error' => 'L\'image n\'a pas été trouvée'
+                ] ,500
+            );
+        }
+    }
     
     /**
      * Method normalizeEventName [Normalize event name]
@@ -193,11 +225,8 @@ class ImageController extends Controller
         'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y' );
         $eventName = strtr( $eventName, $allAccentLetters );
         $allSpecialChars = array('/','\\',':',';','!','@','#','$','%','^','*','(',')','+','=','|','{','}','[',']','"',"'",'<','>',',','?','~','`','&',' ','.');
-        // create associative array with special chars and their replacement _
         $replace = array_combine($allSpecialChars, array_fill(0, count($allSpecialChars), '_'));
-        // replace special chars with _
         $eventName = strtr($eventName, $replace);
-        // $eventName = strtr($allSpecialChars, '_', $eventName);
         $eventName = preg_replace('/_+/', '_', $eventName);
         $eventName = strtolower($eventName);
         return $eventName;

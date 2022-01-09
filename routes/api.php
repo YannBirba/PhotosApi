@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/group/event/{group_id}',[GroupController::class, 'event']);
     Route::post('/event/group/{event_id}',[GroupController::class, 'group']);
     Route::get('/image/event',[ImageController::class, 'event']);
+    Route::get('/image/file/{image_id}',[ImageController::class, 'file']);
 });
 /*
 Exemples de crud images
