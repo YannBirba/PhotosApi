@@ -117,30 +117,62 @@ class ImageController extends Controller
     /**
      * Remove the specified image from storage.
      *
-     * @param  \App\Models\Topicality  $topicality
+     * @param  \App\Models\Image $image
      * @return \Illuminate\Http\Response
      */
     public function destroy(Image $image)
     {
-
-        if($image->delete()){
-            return response()->json([
-                'success' => 'Image supprimée avec succès'
-            ],200
-            );
+        if ($path = storage_path() . "\\app\\public\\images\\events\\2022\\event-test\\event-test__voltairefgh.png") {
+            if (Storage::delete($path)){
+                return response()->json([
+                    'success' => 'Image supprimée avec succès'
+                    ] ,500
+                );
+            }
+            else {
+                return response()->json([
+                    'error' => 'Erreur lors de la suppression de l\'image'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
+        else{
             return response()->json([
-                'error' => 'Erreur lors de la suppression de l\'image'
+                'error' => 'Le fichier n\'a pas été trouvé'
                 ] ,500
             );
         }
+
+        // if ($path = storage_path() . "\app\public\\". $image->path . $image->name . '.' . $image->extension) {
+        //     Storage::delete($path);
+        //     return response()->json([
+        //         'success' => 'Image supprimée avec succès'
+        //         ] ,500
+        //     );
+        // }
+        // else{
+        //     return response()->json([
+        //         'error' => 'Le fichier n\'a pas été trouvé'
+        //         ] ,500
+        //     );
+        // }
+        // if($image->delete()){
+        //     return response()->json([
+        //         'success' => 'Image supprimée avec succès'
+        //     ],200
+        //     );
+        // }
+        // else
+        // {
+        //     return response()->json([
+        //         'error' => 'Erreur lors de la suppression de l\'image'
+        //         ] ,500
+        //     );
+        // }
     }
        /**
      * Remove the specified image from storage.
      *
-     * @param  \App\Models\Topicality  $topicality
      * @return \Illuminate\Http\Response
      */
     public function search()
