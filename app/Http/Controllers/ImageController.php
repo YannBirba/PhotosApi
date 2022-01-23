@@ -192,29 +192,22 @@ class ImageController extends Controller
     { 
         if($image = Image::find($image_id)){          
             //php artisan storage:link before using this method
-            // if (Storage::exists($image->path . $image->name . '.' . $image->extension)) {
-            //     return response()->json([
-            //         'teest'=> 'test'
-            //     ]);
-                return Storage::get($image->path . $image->name . '.' . $image->extension);
-            // }
-            // else{
-            //     throw new FileNotFoundException('File not found');
-                
-            // }
-            // else {
-            //     return response()->json([
-            //         'error' => 'L\'image n\'a pas été trouvée'
-            //         ] ,500
-            //     );
-            // }
+            if ($path = storage_path() . "\app\public\\". $image->path . $image->name . '.' . $image->extension) {
+                return response()->download($path);
+            }
+            else{
+                return response()->json([
+                    'error' => 'Le fichier n\'a pas été trouvé'
+                    ] ,500
+                );
+            }
         }
-        // else {
-        //     return response()->json([
-        //         'error' => 'L\'image n\'a pas été trouvée'
-        //         ] ,500
-        //     );
-        // }
+        else {
+            return response()->json([
+                'error' => 'L\'image n\'a pas été trouvée'
+                ] ,500
+            );
+        }
     }
     
     /**
