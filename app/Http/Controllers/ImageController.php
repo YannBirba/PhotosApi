@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Image;
 use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
+use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class ImageController extends Controller
 {
@@ -101,6 +103,31 @@ class ImageController extends Controller
     public function update(Request $request, Image $image)
     {
         if($image->update($request->all())){
+            if ($file = $request->file('file')) {
+                $path = storage_path() . "/app/public/". $image->path . $image->name . '.' . $image->extension;
+                if (File::exists($path)) {
+                    if (unlink($path)) {
+                        $fileDestinationPath = $this->storageBasePath . Event::find($request->input('event_id'))->year . '/' . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '/';
+                        $file->move('storage/'. $fileDestinationPath , $request->input('name') . '.' . $request->input('extension'));
+                        return response()->json([
+                            'success' => 'Image modifiée avec succès',
+                        ],200
+                        );
+                    }
+                    else {
+                        return response()->json([
+                            'error' => 'Erreur lors de la modification de l\'image'
+                            ] ,500
+                        );
+                    }
+                }
+                else{
+                    return response()->json([
+                        'error' => 'Le fichier n\'a pas été trouvé'
+                        ] ,500
+                    );
+                }
+            }
             return response()->json([
                 'success' => 'Image modifiée avec succès'
             ],200
@@ -122,8 +149,9 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-        if ($path = storage_path() . "\\app\\public\\images\\events\\2022\\event-test\\event-test__voltairefgh.png") {
-            if (Storage::delete($path)){
+        $path = storage_path() . "/app/public/". $image->path . $image->name . '.' . $image->extension;
+        if (File::exists($path)) {
+            if (unlink($path) && $image->delete()) {
                 return response()->json([
                     'success' => 'Image supprimée avec succès'
                     ] ,500
@@ -142,33 +170,6 @@ class ImageController extends Controller
                 ] ,500
             );
         }
-
-        // if ($path = storage_path() . "\app\public\\". $image->path . $image->name . '.' . $image->extension) {
-        //     Storage::delete($path);
-        //     return response()->json([
-        //         'success' => 'Image supprimée avec succès'
-        //         ] ,500
-        //     );
-        // }
-        // else{
-        //     return response()->json([
-        //         'error' => 'Le fichier n\'a pas été trouvé'
-        //         ] ,500
-        //     );
-        // }
-        // if($image->delete()){
-        //     return response()->json([
-        //         'success' => 'Image supprimée avec succès'
-        //     ],200
-        //     );
-        // }
-        // else
-        // {
-        //     return response()->json([
-        //         'error' => 'Erreur lors de la suppression de l\'image'
-        //         ] ,500
-        //     );
-        // }
     }
        /**
      * Remove the specified image from storage.
