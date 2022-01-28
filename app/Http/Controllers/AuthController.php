@@ -19,6 +19,13 @@ class AuthController extends Controller
         $user = Auth::user();
         return $user;
     }
+    public function index(){
+        $user = Auth::user();
+        if ($user->is_admin) {
+            return User::all();
+        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+    }
     public function register(Request $request){
         if ($request->input('is_admin') === null || !$request->input('is_admin')) {
             $is_admin = false;
@@ -99,5 +106,39 @@ class AuthController extends Controller
         $group_id = $user->group_id;
         $events = Group::find($group_id)->events;
         return $events;
+    }
+
+    public function update(Request $request, int $user_id){
+        $user = User::find($user_id);;
+        if ($user->is_admin) {
+            if($user->update($request->all())){
+                return response([
+                    'message'=> 'Modification réussie!'
+                ],Response::HTTP_ACCEPTED);
+            }
+            else{
+                return response([
+                    'message'=> 'Erreur lors de la modification'
+                ],Response::HTTP_UNAUTHORIZED);
+            }
+
+        }
+        else {
+            return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function updateCurrent(Request $request){
+        $user = Auth::user();
+        if($user->update($request->all())){
+            return response([
+                'message'=> 'Modification réussie!'
+            ],Response::HTTP_ACCEPTED);
+        }
+        else{
+            return response([
+                'message'=> 'Erreur lors de la modification'
+            ],Response::HTTP_UNAUTHORIZED);
+        }
     }
 }
