@@ -18,7 +18,10 @@ class GroupController extends Controller
      */
     public function index()
     {
-        return Group::all();
+        if (AuthController::isAdmin()) {
+            return Group::all();
+        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -29,19 +32,22 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        if(Group::create($request->all())){
-            return response()->json([
-                'success' => 'Groupe créé avec succès'
-            ],200
-            );
+        if (AuthController::isAdmin()) {
+            if(Group::create($request->all())){
+                return response()->json([
+                    'success' => 'Groupe créé avec succès'
+                ],200
+                );
+            }
+            else
+            {
+                return response()->json([
+                    'error' => 'Erreur lors de la création du groupe'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
-            return response()->json([
-                'error' => 'Erreur lors de la création du groupe'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -64,19 +70,22 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group)
     {
-        if($group->update($request->all())){
-            return response()->json([
-                'success' => 'Groupe modifié avec succès'
-            ],200
-            );
+        if (AuthController::isAdmin()) {
+            if($group->update($request->all())){
+                return response()->json([
+                    'success' => 'Groupe modifié avec succès'
+                ],200
+                );
+            }
+            else
+            {
+                return response()->json([
+                    'error' => 'Erreur lors de la modification du groupe'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
-            return response()->json([
-                'error' => 'Erreur lors de la modification du groupe'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -87,35 +96,38 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        if ($group->events()->detach()) {
-            if ($group->users()->delete()) {
-                if($group->delete()){
-                    return response()->json([
-                        'success' => 'Groupe supprimé avec succès'
-                    ],200
-                    );
+        if (AuthController::isAdmin()) {
+            if ($group->events()->detach()) {
+                if ($group->users()->delete()) {
+                    if($group->delete()){
+                        return response()->json([
+                            'success' => 'Groupe supprimé avec succès'
+                        ],200
+                        );
+                    }
+                    else
+                    {
+                        return response()->json([
+                            'error' => 'Erreur lors de la suppression du groupe'
+                            ] ,500
+                        );
+                    }
                 }
-                else
-                {
+                else {
                     return response()->json([
-                        'error' => 'Erreur lors de la suppression du groupe'
+                        'error' => 'Erreur lors de la suppression des utilisateurs rattachés au groupe'
                         ] ,500
                     );
                 }
             }
             else {
                 return response()->json([
-                    'error' => 'Erreur lors de la suppression des utilisateurs rattachés au groupe'
+                    'error' => 'Erreur lors du détachement des événements liés au groupe'
                     ] ,500
                 );
             }
         }
-        else {
-            return response()->json([
-                'error' => 'Erreur lors du détachement des événements liés au groupe'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
     
     /**
@@ -152,29 +164,32 @@ class GroupController extends Controller
      */
     public function event(int $group_id, Request $request)
     {
-        $event_id = ($request->input('event_id'));
-        if ($event_id !== null && $event_id) {
-            $group = Group::find($group_id);
-            if ($group && $group !== null) {
-                $group->events()->attach($event_id);
-                $event = Event::find($event_id);
-                return response()->json([
-                    'message' => 'L\'événement '. $event->name . ' a bien été lié au groupe '. $group->name . '.'
-                    ] ,500
-                );
+        if (AuthController::isAdmin()) {
+            $event_id = ($request->input('event_id'));
+            if ($event_id !== null && $event_id) {
+                $group = Group::find($group_id);
+                if ($group && $group !== null) {
+                    $group->events()->attach($event_id);
+                    $event = Event::find($event_id);
+                    return response()->json([
+                        'message' => 'L\'événement '. $event->name . ' a bien été lié au groupe '. $group->name . '.'
+                        ] ,500
+                    );
+                }
+                else{
+                    return response()->json([
+                        'error' => 'Aucun groupe n\'a été trouvé pour l\'identifiant renseigné'
+                        ] ,500
+                    );
+                }
             }
             else{
                 return response()->json([
-                    'error' => 'Aucun groupe n\'a été trouvé pour l\'identifiant renseigné'
+                    'error' => 'Veuillez renseigner un événement dans la requète'
                     ] ,500
                 );
             }
         }
-        else{
-            return response()->json([
-                'error' => 'Veuillez renseigner un événement dans la requète'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 }

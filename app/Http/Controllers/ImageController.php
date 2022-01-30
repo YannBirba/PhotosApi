@@ -28,8 +28,7 @@ class ImageController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             return Image::all();
         }
         else {
@@ -45,8 +44,7 @@ class ImageController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             $fileDestinationPath ='';
         $file = '';
         $validation = Validator::make($request->all() ,[
@@ -127,8 +125,7 @@ class ImageController extends Controller
      */
     public function update(Request $request, int $image_id)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             $image = Image::find($image_id);
         $fileDestinationPath ='';
         $file = '';
@@ -215,8 +212,7 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             $imageStoragePath = storage_path() . "/app/public/". $image->path;
             $path = $imageStoragePath . $image->name . '.' . $image->extension;
             if (File::exists($path)) {
@@ -251,27 +247,27 @@ class ImageController extends Controller
             return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
         }
     }
-       /**
-     * Remove the specified image from storage.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function search()
-    {
-        $data = $_GET['title'];
-        if($images = Image::where('title', 'like', "%{$data}%")->get()){
-            return response()->json([
-                'data' => $images
-            ],200
-        ); 
-        }
-        else{
-            return response()->json([
-                'error' => 'Erreur lors de la recherche'
-            ],500
-        ); 
-        }
-    }
+    //    /**
+    //  * Remove the specified image from storage.
+    //  *
+    //  * @return \Illuminate\Http\Response
+    //  */
+    // public function search()
+    // {
+    //     $data = $_GET['title'];
+    //     if($images = Image::where('title', 'like', "%{$data}%")->get()){
+    //         return response()->json([
+    //             'data' => $images
+    //         ],200
+    //     ); 
+    //     }
+    //     else{
+    //         return response()->json([
+    //             'error' => 'Erreur lors de la recherche'
+    //         ],500
+    //     ); 
+    //     }
+    // }
 
     /**
      * Method get event of an image

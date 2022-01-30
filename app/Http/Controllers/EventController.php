@@ -19,8 +19,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             return Event::orderBy('start_date', 'desc')->get();
         }
         return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
@@ -48,8 +47,7 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             if(Event::create($request->all())){
                 return response()->json([
                     'success' => 'Evénement créé avec succès'
@@ -87,8 +85,7 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             if($event->update($request->all())){
                 return response()->json([
                     'success' => 'Evénement modifié avec succès'
@@ -114,8 +111,7 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             if ($event->groups()->detach()) {
                 if($event->delete()){
                     return response()->json([
@@ -150,8 +146,7 @@ class EventController extends Controller
      */
     public function groups(int $event_id)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             return Event::find($event_id)->groups;
         }
         return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
@@ -190,8 +185,7 @@ class EventController extends Controller
      */
     public function group(int $event_id, Request $request)
     {
-        $user = Auth::user();
-        if ($user->is_admin) {
+        if (AuthController::isAdmin()) {
             $group_id = ($request->input('group_id'));
             if ($group_id !== null && $group_id) {
                 $event = Event::find($event_id);

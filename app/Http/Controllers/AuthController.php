@@ -141,4 +141,14 @@ class AuthController extends Controller
             ],Response::HTTP_UNAUTHORIZED);
         }
     }
+
+    public static function isAdmin(User $user = null){
+        if ($user === null) {
+            $user = Auth::user();
+            if ($user->is_admin) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
