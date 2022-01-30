@@ -18,15 +18,15 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('user/updatecurrent',[AuthController::class, 'updatecurrent']);
     Route::put('user/{user_id}',[AuthController::class, 'update']);
 
-        
-    Route::get('/group/{group_id}/events',[GroupController::class, 'events']);
     Route::get('/event/{event_id}/groups',[EventController::class, 'groups']);
     Route::get('/event/{event_id}/images',[EventController::class, 'images']);
     Route::get('/event/{event_id}/image',[EventController::class, 'image']);
-    Route::get('/group/{group_id}/users',[GroupController::class, 'users']);
-    Route::get('/event/actualyear',[EventController::class, 'indexactualyear']);
-    Route::post('/group/{group_id}/event',[GroupController::class, 'event']);
+    Route::get('/event/usergroupindex',[EventController::class, 'usergroupindex']);
     Route::post('/event/{event_id}/group',[GroupController::class, 'group']);
+    Route::get('/group/{group_id}/events',[GroupController::class, 'events']);
+    Route::get('/group/{group_id}/users',[GroupController::class, 'users']);
+    Route::post('/group/{group_id}/event',[GroupController::class, 'event']);
+
 
     Route::get('/image/event',[ImageController::class, 'event']);
     Route::get('/image/{image_id}/file',[ImageController::class, 'file']);

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Resources\Event as ResourcesEvent;
 use App\Models\Group;
 use App\Models\Image;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class EventController extends Controller
 {
@@ -17,18 +19,25 @@ class EventController extends Controller
      */
     public function index()
     {
-        //return all events ordered by start_date descending
-        return Event::orderBy('start_date', 'desc')->get();
+        $user = Auth::user();
+        if ($user->is_admin) {
+            return Event::orderBy('start_date', 'desc')->get();
+        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
-     * Display a listing of events of the actual year.
+     * return all event of the user group from the actual year group_id come from group_event pivot table
      *
      * @return \Illuminate\Http\Response
      */
-    public function indexactualyear()
+    public function usergroupindex()
     {
-        return Event::orderBy('start_date', 'desc')->where('year', date('Y'))->get();
+        $user = Auth::user();
+        // return all event of the user group from the actual year group_id come from group_event pivot table
+        return Event::whereHas('group_events', function ($query) use ($user) {
+            $query->where('group_id', $user->group_id);
+        })->where('year', '=', date('Y'))->orderBy('start_date', 'desc')->get();
     }
 
     /**
@@ -39,19 +48,23 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        if(Event::create($request->all())){
-            return response()->json([
-                'success' => 'Evénement créé avec succès'
-            ],200
-            );
+        $user = Auth::user();
+        if ($user->is_admin) {
+            if(Event::create($request->all())){
+                return response()->json([
+                    'success' => 'Evénement créé avec succès'
+                ],200
+                );
+            }
+            else
+            {
+                return response()->json([
+                    'error' => 'Erreur lors de la création de l\'evénement'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
-            return response()->json([
-                'error' => 'Erreur lors de la création de l\'evénement'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -74,19 +87,23 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        if($event->update($request->all())){
-            return response()->json([
-                'success' => 'Evénement modifié avec succès'
-            ],200
-            );
+        $user = Auth::user();
+        if ($user->is_admin) {
+            if($event->update($request->all())){
+                return response()->json([
+                    'success' => 'Evénement modifié avec succès'
+                ],200
+                );
+            }
+            else
+            {
+                return response()->json([
+                    'error' => 'Erreur lors de la modification de l\'evénement'
+                    ] ,500
+                );
+            }
         }
-        else
-        {
-            return response()->json([
-                'error' => 'Erreur lors de la modification de l\'evénement'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -97,27 +114,31 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        if ($event->groups()->detach()) {
-            if($event->delete()){
-                return response()->json([
-                    'success' => 'Evénement supprimé avec succès'
-                ],200
-                );
+        $user = Auth::user();
+        if ($user->is_admin) {
+            if ($event->groups()->detach()) {
+                if($event->delete()){
+                    return response()->json([
+                        'success' => 'Evénement supprimé avec succès'
+                    ],200
+                    );
+                }
+                else
+                {
+                    return response()->json([
+                        'error' => 'Erreur lors de la suppression de l\'événement'
+                        ] ,500
+                    );
+                }
             }
-            else
-            {
+            else {
                 return response()->json([
-                    'error' => 'Erreur lors de la suppression de l\'événement'
+                    'error' => 'Erreur lors du détachement des groupes liés a l\'événement'
                     ] ,500
                 );
             }
         }
-        else {
-            return response()->json([
-                'error' => 'Erreur lors du détachement des groupes liés a l\'événement'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
     
     /**
@@ -129,7 +150,11 @@ class EventController extends Controller
      */
     public function groups(int $event_id)
     {
-        return Event::find($event_id)->groups;
+        $user = Auth::user();
+        if ($user->is_admin) {
+            return Event::find($event_id)->groups;
+        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
      /**
@@ -165,30 +190,34 @@ class EventController extends Controller
      */
     public function group(int $event_id, Request $request)
     {
-        $group_id = ($request->input('group_id'));
-        if ($group_id !== null && $group_id) {
-            $event = Event::find($event_id);
-            if ($event && $event !== null) {
-                $event->groups()->attach($group_id);
-                $group = Group::find($group_id);
-                return response()->json([
-                    'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
-                    ] ,500
-                );
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $group_id = ($request->input('group_id'));
+            if ($group_id !== null && $group_id) {
+                $event = Event::find($event_id);
+                if ($event && $event !== null) {
+                    $event->groups()->attach($group_id);
+                    $group = Group::find($group_id);
+                    return response()->json([
+                        'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
+                        ] ,500
+                    );
+                }
+                else{
+                    return response()->json([
+                        'error' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné'
+                        ] ,500
+                    );
+                }
             }
             else{
                 return response()->json([
-                    'error' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné'
+                    'error' => 'Veuillez renseigner un groupe dans la requète'
                     ] ,500
                 );
             }
         }
-        else{
-            return response()->json([
-                'error' => 'Veuillez renseigner un groupe dans la requète'
-                ] ,500
-            );
-        }
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
      /**

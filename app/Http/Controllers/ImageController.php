@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Image;
 use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
+use App\Models\User;
 use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\Response;
 
 class ImageController extends Controller
 {
@@ -25,7 +28,13 @@ class ImageController extends Controller
      */
     public function index()
     {
-        return Image::all();
+        $user = Auth::user();
+        if ($user->is_admin) {
+            return Image::all();
+        }
+        else {
+            return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     /**
@@ -36,7 +45,9 @@ class ImageController extends Controller
      */
     public function store(Request $request)
     {
-        $fileDestinationPath ='';
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $fileDestinationPath ='';
         $file = '';
         $validation = Validator::make($request->all() ,[
             'file' => 'required|image|mimes:jpeg,png,jpg|max:8192',
@@ -90,6 +101,10 @@ class ImageController extends Controller
                 );
             }
          }
+        }
+        else {
+            return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        }
     }
 
     /**
@@ -112,7 +127,9 @@ class ImageController extends Controller
      */
     public function update(Request $request, int $image_id)
     {
-        $image = Image::find($image_id);
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $image = Image::find($image_id);
         $fileDestinationPath ='';
         $file = '';
         $validation = Validator::make($request->all() ,[
@@ -186,6 +203,10 @@ class ImageController extends Controller
                 );
             }
          }
+        }
+        else {
+            return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        }
     }
     /**
      * Remove the specified image from storage.
@@ -194,34 +215,40 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-        $imageStoragePath = storage_path() . "/app/public/". $image->path;
-        $path = $imageStoragePath . $image->name . '.' . $image->extension;
-        if (File::exists($path)) {
-            if (unlink($path) && $image->delete()) {
+        $user = Auth::user();
+        if ($user->is_admin) {
+            $imageStoragePath = storage_path() . "/app/public/". $image->path;
+            $path = $imageStoragePath . $image->name . '.' . $image->extension;
+            if (File::exists($path)) {
+                if (unlink($path) && $image->delete()) {
+                    return response()->json([
+                        'success' => 'Image supprimée avec succès'
+                        ] ,500
+                    );
+                }
+                else {
+                    return response()->json([
+                        'error' => 'Erreur lors de la suppression de l\'image'
+                        ] ,500
+                    );
+                }
+            }
+            else{
                 return response()->json([
-                    'success' => 'Image supprimée avec succès'
+                    'error' => 'Le fichier n\'a pas été trouvé'
                     ] ,500
                 );
             }
-            else {
-                return response()->json([
-                    'error' => 'Erreur lors de la suppression de l\'image'
-                    ] ,500
-                );
-            }
+            // $FileSystem = new Filesystem();
+            // if ($FileSystem->exists($imageStoragePath)) {
+            //   $files = $FileSystem->files($imageStoragePath);
+            //   if (empty($files)) {
+            //     $FileSystem->deleteDirectory($imageStoragePath);
+            //   }
+            // }
         }
-        else{
-            return response()->json([
-                'error' => 'Le fichier n\'a pas été trouvé'
-                ] ,500
-            );
-        }
-        $FileSystem = new Filesystem();
-        if ($FileSystem->exists($imageStoragePath)) {
-          $files = $FileSystem->files($imageStoragePath);
-          if (empty($files)) {
-            $FileSystem->deleteDirectory($imageStoragePath);
-          }
+        else {
+            return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
         }
     }
        /**
