@@ -38,7 +38,6 @@ class AuthController extends Controller
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
-
             'is_admin' => $is_admin,
         ]);
         return response([
@@ -76,26 +75,7 @@ class AuthController extends Controller
         ],Response::HTTP_ACCEPTED)->withCookie($cookie);
     }
     
-    /**
-     * Method to check if the user is authenticated by checking if the token is valid
-     * @return void
-     */
-    public function isloggedin(){
-        $cookie = Cookie::get('jwt');
-        if(isset($cookie)){
-            return response([
-                'message'=> 'connecté',
-                'is_logged_in' => true,
-            ],Response::HTTP_ACCEPTED)->withCookie($cookie);
-        }
-        else{
-            return response([
-                'message'=> 'déconnecté',
-                'is_logged_in' => false,
-            ],Response::HTTP_ACCEPTED);
-        }
-    }
-    
+
     /**
      * Method get events of the user group of connected user
      *
@@ -104,8 +84,9 @@ class AuthController extends Controller
     public function events(){
         $user = Auth::user();
         $group_id = $user->group_id;
-        $events = Group::find($group_id)->events;
-        return $events;
+        $group = Group::find($group_id);
+        $events = $group->events;
+        return $events->sortByDesc('start_date')->values();
     }
 
     public function update(Request $request, int $user_id){

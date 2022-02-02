@@ -8,11 +8,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('register',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
-Route::get('isloggedin',[AuthController::class, 'isloggedin']);
 
 Route::middleware('auth:sanctum')->group(function(){
     Route::get('user',[AuthController::class, 'user']);
-    Route::get('user/{id}/events',[AuthController::class, 'events']);
+    Route::get('user/{user_id}/events',[AuthController::class, 'events']);
     Route::post('logout',[AuthController::class, 'logout']);
     Route::get('userlist',[AuthController::class, 'index']);
     Route::put('user/updatecurrent',[AuthController::class, 'updatecurrent']);

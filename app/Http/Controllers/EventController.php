@@ -33,12 +33,11 @@ class EventController extends Controller
     public function usergroupindex()
     {
         $user = Auth::user();
-        // return all event of the user group from the actual year group_id come from group_event pivot table
-        return Event::whereHas('group_events', function ($query) use ($user) {
-            $query->where('group_id', $user->group_id);
-        })->where('year', '=', date('Y'))->orderBy('start_date', 'desc')->get();
+        $group_id = $user->group_id;
+        $group = Group::find($group_id);
+        $events = $group->events;
+        return $events->sortByDesc('start_date')->values();
     }
-
     /**
      * Store a newly created event in storage.
      *
