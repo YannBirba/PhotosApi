@@ -20,7 +20,7 @@ class EventController extends Controller
     public function index()
     {
         if (AuthController::isAdmin()) {
-            return Event::orderBy('start_date', 'desc')->get();
+            return ResourcesEvent::collection(Event::orderBy('start_date', 'desc')->get());
         }
         return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
@@ -111,27 +111,40 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         if (AuthController::isAdmin()) {
-            if ($event->groups()->detach()) {
-                if($event->delete()){
-                    return response()->json([
-                        'success' => 'Evénement supprimé avec succès'
-                    ],200
-                    );
-                }
-                else
-                {
-                    return response()->json([
-                        'error' => 'Erreur lors de la suppression de l\'événement'
-                        ] ,500
-                    );
-                }
+
+            if(Image::where('event_id', $event->id)->first()){
+                return response()->json(
+                    [
+                        'error' => 'Impossible de supprimer l\'événement car il possède au moins image'
+                    ] ,500
+                );
             }
-            else {
+
+            if($event->groups->count( ) > 0){
+                if ($event->groups()->detach()) {
+                }
+                else {
                 return response()->json([
                     'error' => 'Erreur lors du détachement des groupes liés a l\'événement'
                     ] ,500
                 );
             }
+            }
+
+            if($event->delete()){
+                return response()->json([
+                    'success' => 'Evénement supprimé avec succès'
+                ],200
+                );
+            }
+            else
+            {
+                return response()->json([
+                    'error' => 'Erreur lors de la suppression de l\'événement'
+                    ] ,500
+                );
+            }
+
         }
         return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
