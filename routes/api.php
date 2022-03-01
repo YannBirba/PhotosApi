@@ -30,7 +30,19 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/image/event',[ImageController::class, 'event']);
     Route::get('/image/{image_id}/file',[ImageController::class, 'file']);
 
-    Route::apiResource('event',EventController::class);
-    Route::apiResource('group',GroupController::class);
-    Route::apiResource('image',ImageController::class);
+    Route::get('/event',[EventController::class, 'index']);
+    Route::put('/event/{event_id}',[EventController::class, 'update']);
+    Route::post('/event',[EventController::class, 'store']);
+    Route::delete('/event/{event_id}',[EventController::class, 'destroy']);
+
+
+    Route::get('/group',[GroupController::class, 'index']);
+    Route::put('/group/{group_id}',[GroupController::class, 'update']);
+    Route::post('/group',[GroupController::class, 'store']);
+    Route::delete('/group/{group_id}',[GroupController::class, 'destroy']);
+
+    Route::get('/image',[ImageController::class, 'index']);
+    Route::put('/image/{image_id}',[ImageController::class, 'update']);
+    Route::post('/image',[ImageController::class, 'store']);
+    Route::delete('/image/{image_id}',[ImageController::class, 'destroy']);
 });

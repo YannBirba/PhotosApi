@@ -85,16 +85,29 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         if (AuthController::isAdmin()) {
-            if($event->update($request->all())){
+            https://bestofphp.com/repo/dwightwatson-validating-php-laravel-utilities
+            // if($event->update($request->all())){
+            //     return response()->json([
+            //         'success' => 'Evénement modifié avec succès'
+            //     ],200
+            //     );
+            // }
+            // else
+            // {
+            //     return response()->json([
+            //         'error' => 'Erreur lors de la modification de l\'evénement'
+            //         ] ,500
+            //     );
+            // }
+            try {
+                $event->update($request->all());
                 return response()->json([
                     'success' => 'Evénement modifié avec succès'
                 ],200
                 );
-            }
-            else
-            {
-                return response()->json([
-                    'error' => 'Erreur lors de la modification de l\'evénement'
+            } catch (\Illuminate\Database\QueryException $ex) {
+                    return response()->json([
+                        'error' => $ex->getMessage()
                     ] ,500
                 );
             }
