@@ -8,6 +8,7 @@ use App\Http\Resources\Event as ResourcesEvent;
 use App\Models\Group;
 use App\Models\Image;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class EventController extends Controller
@@ -47,18 +48,24 @@ class EventController extends Controller
     public function store(Request $request)
     {
         if (AuthController::isAdmin()) {
-            if(Event::create($request->all())){
-                return response()->json([
-                    'success' => 'Evénement créé avec succès'
-                ],200
-                );
+            $validator = Validator::make($request->all(), Event::rules());
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
-            else
-            {
-                return response()->json([
-                    'error' => 'Erreur lors de la création de l\'evénement'
-                    ] ,500
-                );
+            else{
+                if(Event::create($request->all())){
+                    return response()->json([
+                        'success' => 'Evénement créé avec succès'
+                    ],200
+                    );
+                }
+                else
+                {
+                    return response()->json([
+                        'error' => 'Erreur lors de la création de l\'evénement'
+                        ] ,500
+                    );
+                }
             }
         }
         return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
@@ -85,31 +92,24 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         if (AuthController::isAdmin()) {
-            https://bestofphp.com/repo/dwightwatson-validating-php-laravel-utilities
-            // if($event->update($request->all())){
-            //     return response()->json([
-            //         'success' => 'Evénement modifié avec succès'
-            //     ],200
-            //     );
-            // }
-            // else
-            // {
-            //     return response()->json([
-            //         'error' => 'Erreur lors de la modification de l\'evénement'
-            //         ] ,500
-            //     );
-            // }
-            try {
-                $event->update($request->all());
-                return response()->json([
-                    'success' => 'Evénement modifié avec succès'
-                ],200
-                );
-            } catch (\Illuminate\Database\QueryException $ex) {
+            $validator = Validator::make($request->all(), Event::rules());
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+            else{
+                if($event->update($request->all())){
                     return response()->json([
-                        'error' => $ex->getMessage()
-                    ] ,500
-                );
+                        'success' => 'Evénement modifié avec succès'
+                    ],200
+                    );
+                }
+                else
+                {
+                    return response()->json([
+                        'error' => 'Erreur lors de la modification de l\'evénement'
+                        ] ,500
+                    );
+                }
             }
         }
         return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);

@@ -19,7 +19,7 @@ class CreateEventsTable extends Migration
             $table->string('description')->nullable();
             $table->string('location')->nullable();
             $table->year('year')->default(date('Y'));
-            $table->dateTime('start_date')->nullable();
+            $table->dateTime('start_date');
             $table->dateTime('end_date')->nullable();
             $table->timestamps();
         });

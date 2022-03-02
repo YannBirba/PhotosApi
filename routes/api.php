@@ -31,18 +31,18 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('/image/{image_id}/file',[ImageController::class, 'file']);
 
     Route::get('/event',[EventController::class, 'index']);
-    Route::put('/event/{event_id}',[EventController::class, 'update']);
+    Route::put('/event/{event}',[EventController::class, 'update']);
     Route::post('/event',[EventController::class, 'store']);
-    Route::delete('/event/{event_id}',[EventController::class, 'destroy']);
+    Route::delete('/event/{event}',[EventController::class, 'destroy']);
 
 
     Route::get('/group',[GroupController::class, 'index']);
-    Route::put('/group/{group_id}',[GroupController::class, 'update']);
+    Route::put('/group/{group}',[GroupController::class, 'update']);
     Route::post('/group',[GroupController::class, 'store']);
-    Route::delete('/group/{group_id}',[GroupController::class, 'destroy']);
+    Route::delete('/group/{group}',[GroupController::class, 'destroy']);
 
     Route::get('/image',[ImageController::class, 'index']);
-    Route::put('/image/{image_id}',[ImageController::class, 'update']);
+    Route::put('/image/{image}',[ImageController::class, 'update']);
     Route::post('/image',[ImageController::class, 'store']);
-    Route::delete('/image/{image_id}',[ImageController::class, 'destroy']);
+    Route::delete('/image/{image}',[ImageController::class, 'destroy']);
 });
