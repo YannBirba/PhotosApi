@@ -53,9 +53,10 @@ class EventController extends Controller
                 return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
             else{
-                if(Event::create($request->all())){
+                if($event = Event::create($request->all())){
                     return response()->json([
-                        'success' => 'Evénement créé avec succès'
+                        'success' => 'Evénement créé avec succès',
+                        'event' => $event
                     ],200
                     );
                 }
