@@ -4,12 +4,16 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ImageController;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::post('register',[AuthController::class, 'register']);
 Route::post('login',[AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function(){
+    Route::middleware('isAdmin')->group(function(){
+
+    });
     Route::get('user',[AuthController::class, 'user']);
     Route::get('user/{user_id}/events',[AuthController::class, 'events']);
     Route::post('logout',[AuthController::class, 'logout']);
@@ -45,4 +49,8 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::put('/image/{image}',[ImageController::class, 'update']);
     Route::post('/image',[ImageController::class, 'store']);
     Route::delete('/image/{image}',[ImageController::class, 'destroy']);
+});
+
+Route::fallback(function(){
+    return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
 });

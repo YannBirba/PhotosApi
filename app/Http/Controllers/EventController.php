@@ -48,15 +48,14 @@ class EventController extends Controller
     public function store(Request $request)
     {
         if (AuthController::isAdmin()) {
-            $validator = Validator::make($request->all(), Event::rules());
+            $validator = Validator::make($request->all(), Event::createRules());
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
             else{
-                if($event = Event::create($request->all())){
+                if(Event::create($request->all())){
                     return response()->json([
                         'success' => 'Evénement créé avec succès',
-                        'event' => $event
                     ],200
                     );
                 }
@@ -93,7 +92,7 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         if (AuthController::isAdmin()) {
-            $validator = Validator::make($request->all(), Event::rules());
+            $validator = Validator::make($request->all(), Event::updateRules());
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
