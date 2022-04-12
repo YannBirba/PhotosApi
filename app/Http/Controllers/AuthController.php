@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Resources\User as ResourcesUser;
+use App\Http\Resources\Event as ResourcesEvent;
 
 /**
  * AuthController class
@@ -17,14 +19,10 @@ class AuthController extends Controller
 {
     public function user(){
         $user = Auth::user();
-        return $user;
+        return new ResourcesUser($user);
     }
     public function index(){
-        $user = Auth::user();
-        if ($user->is_admin) {
-            return User::all();
-        }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        return ResourcesUser::collection(User::all());
     }
     public function register(Request $request){
         if ($request->input('is_admin') === null || !$request->input('is_admin')) {
@@ -86,26 +84,19 @@ class AuthController extends Controller
         $group_id = $user->group_id;
         $group = Group::find($group_id);
         $events = $group->events;
-        return $events->sortByDesc('start_date')->values();
+        return ResourcesEvent::collection($events);
     }
 
-    public function update(Request $request, int $user_id){
-        $user = User::find($user_id);;
-        if ($user->is_admin) {
-            if($user->update($request->all())){
-                return response([
-                    'message'=> 'Modification réussie!'
-                ],Response::HTTP_ACCEPTED);
-            }
-            else{
-                return response([
-                    'message'=> 'Erreur lors de la modification'
-                ],Response::HTTP_UNAUTHORIZED);
-            }
-
+    public function update(Request $request, User $user){
+        if($user->update($request->all())){
+            return response([
+                'message'=> 'Modification réussie!'
+            ],Response::HTTP_ACCEPTED);
         }
-        else {
-            return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        else{
+            return response([
+                'message'=> 'Erreur lors de la modification'
+            ],Response::HTTP_UNAUTHORIZED);
         }
     }
 

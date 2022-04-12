@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Resources\Event as ResourcesEvent;
+use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Group;
 use App\Models\Image;
 use Illuminate\Support\Facades\Auth;
@@ -20,10 +21,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        if (AuthController::isAdmin()) {
-            return ResourcesEvent::collection(Event::orderBy('start_date', 'desc')->get());
-        }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        return ResourcesEvent::collection(Event::orderBy('start_date', 'desc')->get());
     }
 
     /**
@@ -47,28 +45,23 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        if (AuthController::isAdmin()) {
-            $validator = Validator::make($request->all(), Event::createRules());
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        $validator = Validator::make($request->all(), Event::createRules());
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        else{
+            if(Event::create($request->all())){
+                return response()->json([
+                    'message' => 'Evénement créé avec succès',
+                ], Response::HTTP_CREATED);
             }
-            else{
-                if(Event::create($request->all())){
-                    return response()->json([
-                        'success' => 'Evénement créé avec succès',
-                    ],200
-                    );
-                }
-                else
-                {
-                    return response()->json([
-                        'error' => 'Erreur lors de la création de l\'evénement'
-                        ] ,500
-                    );
-                }
+            else
+            {
+                return response()->json([
+                    'message' => 'Erreur lors de la création de l\'evénement'
+                    ] , Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -91,28 +84,23 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        if (AuthController::isAdmin()) {
-            $validator = Validator::make($request->all(), Event::updateRules());
-            if ($validator->fails()) {
-                return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        $validator = Validator::make($request->all(), Event::updateRules());
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        else{
+            if($event->update($request->all())){
+                return response()->json([
+                    'message' => 'Evénement modifié avec succès'
+                ], Response::HTTP_OK);
             }
-            else{
-                if($event->update($request->all())){
-                    return response()->json([
-                        'success' => 'Evénement modifié avec succès'
-                    ],200
-                    );
-                }
-                else
-                {
-                    return response()->json([
-                        'error' => 'Erreur lors de la modification de l\'evénement'
-                        ] ,500
-                    );
-                }
+            else
+            {
+                return response()->json([
+                    'message' => 'Erreur lors de la modification de l\'evénement'
+                    ] , Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -123,43 +111,34 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        if (AuthController::isAdmin()) {
-
-            if(Image::where('event_id', $event->id)->first()){
-                return response()->json(
-                    [
-                        'error' => 'Impossible de supprimer l\'événement car il possède au moins image'
-                    ] ,500
-                );
-            }
-
-            if($event->groups->count( ) > 0){
-                if ($event->groups()->detach()) {
-                }
-                else {
-                return response()->json([
-                    'error' => 'Erreur lors du détachement des groupes liés a l\'événement'
-                    ] ,500
-                );
-            }
-            }
-
-            if($event->delete()){
-                return response()->json([
-                    'success' => 'Evénement supprimé avec succès'
-                ],200
-                );
-            }
-            else
-            {
-                return response()->json([
-                    'error' => 'Erreur lors de la suppression de l\'événement'
-                    ] ,500
-                );
-            }
-
+        if(Image::where('event_id', $event->id)->first()){
+            return response()->json(
+                [
+                    'message' => 'Impossible de supprimer l\'événement car il possède au moins image'
+                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+
+        if($event->groups->count( ) > 0){
+            if ($event->groups()->detach()) {
+            }
+            else {
+            return response()->json([
+                'message' => 'Erreur lors du détachement des groupes liés a l\'événement'
+                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        }
+
+        if($event->delete()){
+            return response()->json([
+                'message' => 'Evénement supprimé avec succès'
+            ], Response::HTTP_OK);
+        }
+        else
+        {
+            return response()->json([
+                'message' => 'Erreur lors de la suppression de l\'événement'
+                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
@@ -169,35 +148,9 @@ class EventController extends Controller
      *
      * @return array
      */
-    public function groups(int $event_id)
+    public function groups(Event $event)
     {
-        if (AuthController::isAdmin()) {
-            return Event::find($event_id)->groups;
-        }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
-    }
-
-     /**
-     * Search the specified event from storage.
-     *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
-     */
-    public function search()
-    {
-        // $data = $_GET['title'];
-        // if($event = Event::where('title', 'like', "%{$data}%")->get()){
-        //     return response()->json([
-        //         'data' => $events
-        //     ],200
-        // ); 
-        // }
-        // else{
-        //     return response()->json([
-        //         'error' => 'Erreur lors de la recherche'
-        //     ],500
-        //     ); 
-        // }
+        return ResourcesEvent::collection($event->groups);
     }
 
      /**
@@ -208,35 +161,28 @@ class EventController extends Controller
      *
      * @return Json
      */
-    public function group(int $event_id, Request $request)
+    public function group(Event $event, Request $request)
     {
-        if (AuthController::isAdmin()) {
-            $group_id = ($request->input('group_id'));
-            if ($group_id !== null && $group_id) {
-                $event = Event::find($event_id);
-                if ($event && $event !== null) {
-                    $event->groups()->attach($group_id);
-                    $group = Group::find($group_id);
-                    return response()->json([
-                        'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
-                        ] ,500
-                    );
-                }
-                else{
-                    return response()->json([
-                        'error' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné'
-                        ] ,500
-                    );
-                }
+        $group_id = ($request->input('group_id'));
+        if ($group_id !== null && $group_id) {
+            if ($event && $event !== null) {
+                $event->groups()->attach($group_id);
+                $group = Group::find($group_id);
+                return response()->json([
+                    'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
+                    ] , Response::HTTP_OK);
             }
             else{
                 return response()->json([
-                    'error' => 'Veuillez renseigner un groupe dans la requète'
-                    ] ,500
-                );
+                    'message' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné'
+                    ] , Response::HTTP_NOT_FOUND);
             }
         }
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        else{
+            return response()->json([
+                'message' => 'Veuillez renseigner un groupe dans la requète'
+                ] , Response::HTTP_BAD_REQUEST);
+        }
     }
 
      /**
@@ -246,9 +192,9 @@ class EventController extends Controller
      *
      * @return array
      */
-    public function images(int $event_id)
+    public function images(Event $event)
     {
-        return Event::find($event_id)->images;
+        return ResourcesImage::collection($event->images);
     }
 
     /**
@@ -258,16 +204,15 @@ class EventController extends Controller
      *
      * @return array
      */
-    public function image(int $event_id)
+    public function image(Event $event)
     {
-        if($image = Event::find($event_id)->image){
+        if($image = new ResourcesImage($event->image)){
             return $image;
         }
         else {
             return response()->json([
-                'error' => 'L\'image de l\'événement n\'a pas été trouvée'
-                ] ,500
-            );
+                'message' => 'L\'image de l\'événement n\'a pas été trouvée'
+                ] , Response::HTTP_NOT_FOUND);
         }
     }
 }
