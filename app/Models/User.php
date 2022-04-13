@@ -44,7 +44,7 @@ class User extends Authenticatable
             'group_id' => 'required|integer',
             'name' => 'required|string|max:255|min:3',
             'email' => 'required|email|max:255|min:3|unique:users,email',
-            'password' => 'required|string|min:5',
+            'password' => 'required|string|min:8|numeric',
             'is_admin' => 'required|boolean',
         ];
     }
@@ -63,7 +63,7 @@ class User extends Authenticatable
     {
         return [
             'email' => 'required|email|max:255|min:3',
-            'password' => 'required|string|min:6',
+            // 'password' => 'required|string|min:6|numeric',
         ];
     }
 }
