@@ -63,7 +63,7 @@ class User extends Authenticatable
     {
         return [
             'email' => 'required|email|max:255|min:3',
-            // 'password' => 'required|string|min:6|numeric',
+            // 'password' => 'required|string|min:8|numeric',
         ];
     }
 }
