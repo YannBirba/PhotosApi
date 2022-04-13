@@ -8,6 +8,7 @@ use App\Http\Resources\Event as ResourcesEvent;
 use App\Models\Event;
 use App\Models\Group;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class GroupController extends Controller
@@ -30,16 +31,23 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        if(Group::create($request->all())){
-            return response()->json([
-                'message' => 'Groupe créé avec succès'
-            ], Response::HTTP_CREATED);
+        $validator = Validator::make($request->all(), Group::rules());
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        else
-        {
-            return response()->json([
-                'message' => 'Erreur lors de la création du groupe'
-                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+        else{
+            if(Group::create($request->all())){
+                return response()->json([
+                    'message' => 'Groupe créé avec succès',
+                ], Response::HTTP_CREATED);
+            }
+            else
+            {
+                return response()->json([ 
+                    'message' => 'Une erreur est survenue lors de la création du groupe',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -63,16 +71,23 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group)
     {
-        if($group->update($request->all())){
-            return response()->json([
-                'message' => 'Groupe modifié avec succès'
-            ], Response::HTTP_OK);
+        $validator = Validator::make($request->all(), Group::rules());
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        else
-        {
-            return response()->json([
-                'message' => 'Erreur lors de la modification du groupe'
-                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+        else{
+            if($group->update($request->all())){
+                return response()->json([
+                    'message' => 'Groupe modifié avec succès'
+                ], Response::HTTP_OK);
+            }
+            else
+            {
+                return response()->json([
+                    'message' => 'Une erreur est survenue lors de la modification du groupe'
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
         }
     }
 

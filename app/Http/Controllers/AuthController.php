@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Resources\User as ResourcesUser;
 use App\Http\Resources\Event as ResourcesEvent;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * AuthController class
@@ -25,22 +26,26 @@ class AuthController extends Controller
         return ResourcesUser::collection(User::all());
     }
     public function register(Request $request){
-        if ($request->input('is_admin') === null || !$request->input('is_admin')) {
-            $is_admin = false;
+
+        $validator = Validator::make($request->all(), User::createRules());
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
-            $is_admin = $request->input('is_admin');
+            User::create([
+                'group_id' => $request->input('group_id'),
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
+                'is_admin' => $request->input('is_admin'),
+            ]);
+            return response([
+                'message'=> 'Inscription réussie!'
+            ],Response::HTTP_CREATED);
         }
-        User::create([
-            'group_id' => $request->input('group_id'),
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
-            'is_admin' => $is_admin,
-        ]);
-        return response([
-            'message'=> 'Inscription réussie!'
-        ],Response::HTTP_CREATED);
+
+        
     }    
     /**
      * Method to login a user
@@ -49,17 +54,24 @@ class AuthController extends Controller
      * @return void
      */
     public function login(Request $request){
-        if (!Auth::attempt($request->only('email','password'))){
-            return response([
-                'message'=> 'Erreur lors de la tentative de connexion'
-            ],Response::HTTP_UNAUTHORIZED);
+        $validator = Validator::make($request->all(), User::loginRules());
+
+        if ($validator->fails()){
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-            $user = Auth::user();
-            $token = $user->createToken('token')->plainTextToken;
-            $cookie = cookie('jwt', $token, 60*24);
-            return response([
-                'message'=> 'Connexion réussie!'
-            ],Response::HTTP_ACCEPTED)->withCookie($cookie);
+        else{
+            if (!Auth::attempt($request->only('email','password'))){
+                return response([
+                    'message'=> 'Erreur lors de la tentative de connexion'
+                ],Response::HTTP_UNAUTHORIZED);
+            }
+                $user = Auth::user();
+                $token = $user->createToken('token')->plainTextToken;
+                $cookie = cookie('jwt', $token, 60*24);
+                return response([
+                    'message'=> 'Connexion réussie!'
+                ],Response::HTTP_ACCEPTED)->withCookie($cookie);
+        }
     }    
     /**
      * Method to logout a user
@@ -88,35 +100,57 @@ class AuthController extends Controller
     }
 
     public function update(Request $request, User $user){
-        if($user->update($request->all())){
-            return response([
-                'message'=> 'Modification réussie!'
-            ],Response::HTTP_ACCEPTED);
+
+        $validator = Validator::make($request->all(), User::updateRules());
+
+        if ($validator->fails()){
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
-            return response([
-                'message'=> 'Erreur lors de la modification'
-            ],Response::HTTP_UNAUTHORIZED);
+            if($user->update($request->all())){
+                return response([
+                    'message'=> 'Modification réussie!'
+                ],Response::HTTP_ACCEPTED);
+            }
+            else{
+                return response([
+                    'message'=> 'Erreur lors de la modification'
+                ],Response::HTTP_UNAUTHORIZED);
+            }
         }
+
     }
 
     public function updateCurrent(Request $request){
-        $user = Auth::user();
-        if($user->update($request->all())){
-            return response([
-                'message'=> 'Modification réussie!'
-            ],Response::HTTP_ACCEPTED);
+
+        $validator = Validator::make($request->all(), User::updateRules());
+
+        if ($validator->fails()){
+            return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
-            return response([
-                'message'=> 'Erreur lors de la modification'
-            ],Response::HTTP_UNAUTHORIZED);
+            $user = Auth::user();
+            if($user->update($request->all())){
+                return response([
+                    'message'=> 'Modification réussie!'
+                ],Response::HTTP_ACCEPTED);
+            }
+            else{
+                return response([
+                    'message'=> 'Erreur lors de la modification'
+                ],Response::HTTP_UNAUTHORIZED);
+            }
         }
     }
 
     public static function isAdmin(User $user = null){
         if ($user === null) {
             $user = Auth::user();
+            if ($user->is_admin) {
+                return true;
+            }
+        }
+        else{
             if ($user->is_admin) {
                 return true;
             }

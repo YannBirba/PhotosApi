@@ -36,17 +36,11 @@ class ImageController extends Controller
     {
         $fileDestinationPath ='';
         $file = '';
-        $validation = Validator::make($request->all() ,[
-            'event_id' => 'required|integer',
-            'file' => 'required|image|mimes:jpeg,png,jpg|max:8192',
-            'alt' => 'required|string|max:255',
-            'title' => 'required|string|max:255'
-         ]);
+        $validator = Validator::make($request->all() , Image::createRules());
          
-         if($validation->fails()) {
-            return response()->json([
-                'message' => 'Pas de fichier dans la requête'
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+         if($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+
          } else {
             if ($file = $request->file('file')) {
                 $fileDestinationPath = $this->storageBasePath . Event::find($request->input('event_id'))->year . '/' . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '/';
@@ -110,14 +104,10 @@ class ImageController extends Controller
     {
         $fileDestinationPath ='';
         $file = '';
-        $validation = Validator::make($request->all() ,[
-            'file' => 'required|image|mimes:jpeg,png,jpg|max:8192',
-         ]);
+        $validator = Validator::make($request->all() , Image::updateRules());
          
-         if($validation->fails()) {
-            return response()->json([
-                'message' => 'Pas de fichier dans la requête'
-            ], Response::HTTP_BAD_REQUEST);
+         if($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
          } else {
             if ($file = $request->file('file')) {
                 $path = storage_path() . "/app/public/". $image->path . $image->name . '.' . $image->extension;

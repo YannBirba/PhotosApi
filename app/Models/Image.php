@@ -28,4 +28,24 @@ class Image extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    public static function createRules()
+    {
+        return [
+            'event_id' => 'required|integer',
+            'file' => 'required|image|mimes:jpeg,png,jpg|max:8192',
+            'alt' => 'required|string|max:255',
+            'title' => 'required|string|max:255'
+        ];
+    }
+
+    public static function updateRules()
+    {
+        return [
+            'event_id' => 'integer',
+            'file' => 'image|mimes:jpeg,png,jpg|max:8192',
+            'alt' => 'string|max:255',
+            'title' => 'string|max:255'
+        ];
+    }
 }

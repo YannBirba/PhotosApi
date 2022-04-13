@@ -47,7 +47,7 @@ class EventController extends Controller
     {
         $validator = Validator::make($request->all(), Event::createRules());
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
             if(Event::create($request->all())){
@@ -86,7 +86,7 @@ class EventController extends Controller
     {
         $validator = Validator::make($request->all(), Event::updateRules());
         if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
             if($event->update($request->all())){

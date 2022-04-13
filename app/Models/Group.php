@@ -28,4 +28,11 @@ class Group extends Model
     {
         return $this->belongsToMany(Event::class,'group_event');
     }
+
+    public static function rules()
+    {
+        return [
+            'name' => 'required|string|max:50|min:3|unique:groups',
+        ];
+    }
 }
