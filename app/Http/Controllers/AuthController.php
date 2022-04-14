@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Resources\User as ResourcesUser;
-use App\Http\Resources\Event as ResourcesEvent;
 use Illuminate\Support\Facades\Validator;
 
 /**
@@ -44,9 +43,12 @@ class AuthController extends Controller
                 'message'=> 'Inscription réussie!'
             ],Response::HTTP_CREATED);
         }
+    }
 
-        
-    }    
+    public static function show(User $user){
+        return new ResourcesUser($user);
+    }
+
     /**
      * Method to login a user
      *
@@ -72,7 +74,7 @@ class AuthController extends Controller
                     'message'=> 'Connexion réussie!'
                 ],Response::HTTP_ACCEPTED)->withCookie($cookie);
         }
-    }    
+    }
     /**
      * Method to logout a user
      *
@@ -83,20 +85,6 @@ class AuthController extends Controller
         return response([
             'message'=> 'Déconnexion réussie!'
         ],Response::HTTP_ACCEPTED)->withCookie($cookie);
-    }
-    
-
-    /**
-     * Method get events of the user group of connected user
-     *
-     * @return array
-     */
-    public function events(){
-        $user = Auth::user();
-        $group_id = $user->group_id;
-        $group = Group::find($group_id);
-        $events = $group->events;
-        return ResourcesEvent::collection($events);
     }
 
     public function update(Request $request, User $user){
@@ -140,6 +128,19 @@ class AuthController extends Controller
                     'message'=> 'Erreur lors de la modification'
                 ],Response::HTTP_UNAUTHORIZED);
             }
+        }
+    }
+
+    public static function destroy(User $user){
+        if($user->delete()){
+            return response([
+                'message'=> 'Suppression réussie!'
+            ],Response::HTTP_ACCEPTED);
+        }
+        else{
+            return response([
+                'message'=> 'Erreur lors de la suppression'
+            ],Response::HTTP_UNAUTHORIZED);
         }
     }
 

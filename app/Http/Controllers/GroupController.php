@@ -44,7 +44,7 @@ class GroupController extends Controller
             }
             else
             {
-                return response()->json([ 
+                return response()->json([
                     'message' => 'Une erreur est survenue lors de la création du groupe',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -125,18 +125,6 @@ class GroupController extends Controller
                 ] , Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
-    /**
-     * Method get all events from a group
-     *
-     * @param int $group_id [Group id]
-     *
-     * @return array
-     */
-    public function events(Group $group)
-    {
-        return ResourcesEvent::collection($group->events);
-    }
 
     /**
      * Method get all users from a group
@@ -149,7 +137,7 @@ class GroupController extends Controller
     {
         return ResourcesUser::collection($group->users);
     }
-    
+
     /**
      * Method event
      *

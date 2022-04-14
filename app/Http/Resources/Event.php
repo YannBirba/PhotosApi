@@ -18,14 +18,14 @@ class Event extends JsonResource
             'id'=>$this->id,
             'name'=>$this->name,
             'description'=>$this->description,
-            'image'=>$this->image,
+            'image'=> $this->image,
             'year'=>$this->year,
             'start_date'=>$this->start_date,
             'end_date'=>$this->end_date,
             'created_at'=>$this->created_at,
             'updated_at'=>$this->updated_at,
             'location'=>$this->location,
-            'groups'=>$this->groups,
+            'groups'=> $this->groups,
             'images'=>$this->images,
         ];
     }

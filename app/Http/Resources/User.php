@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\Group as ResourcesGroup;
 
 class User extends JsonResource
 {
@@ -16,11 +17,10 @@ class User extends JsonResource
     {
         return [
             'id'=>$this->id,
-            'group'=>$this->group,
             'name'=>$this->name,
-            'image'=>$this->image,
             'email'=>$this->email,
             'is_admin'=>$this->is_admin,
+            'group'=> new ResourcesGroup($this->group),
             'created_at'=>$this->created_at,
             'updated_at'=>$this->updated_at,
         ];

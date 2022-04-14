@@ -37,7 +37,7 @@ class ImageController extends Controller
         $fileDestinationPath ='';
         $file = '';
         $validator = Validator::make($request->all() , Image::createRules());
-         
+
          if($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
 
@@ -45,7 +45,7 @@ class ImageController extends Controller
             if ($file = $request->file('file')) {
                 $fileDestinationPath = $this->storageBasePath . Event::find($request->input('event_id'))->year . '/' . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '/';
                 if (!File::exists($fileDestinationPath . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName())) {
-                    $file->move('storage/'.$fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName());
+                    $file->move('../'.$fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName());
                     if(
                         Image::create([
                             'event_id' => $request->input('event_id'),
@@ -72,7 +72,7 @@ class ImageController extends Controller
                         'message' => 'L\'image existe déjà'
                     ], Response::HTTP_UNPROCESSABLE_ENTITY);
                 }
-                
+
             }
             else{
                 return response()->json([
@@ -105,12 +105,12 @@ class ImageController extends Controller
         $fileDestinationPath ='';
         $file = '';
         $validator = Validator::make($request->all() , Image::updateRules());
-         
+
          if($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
          } else {
             if ($file = $request->file('file')) {
-                $path = storage_path() . "/app/public/". $image->path . $image->name . '.' . $image->extension;
+                $path = storage_path() . "../". $image->path . $image->name . '.' . $image->extension;
                 if (File::exists($path)) {
                     if (unlink($path)) {
                         if (!File::exists($path)) {
@@ -172,7 +172,7 @@ class ImageController extends Controller
      */
     public function destroy(Image $image)
     {
-            $imageStoragePath = storage_path() . "/app/public/". $image->path;
+            $imageStoragePath = storage_path() . "../". $image->path;
             $path = $imageStoragePath . $image->name . '.' . $image->extension;
             if (File::exists($path)) {
                 if (unlink($path) && $image->delete()) {
@@ -195,26 +195,6 @@ class ImageController extends Controller
     }
 
     /**
-     * Method get event of an image
-     *
-     * @param int $image_id [Image id]
-     *
-     * @return Event
-     */
-    public function event(Image $image)
-    {
-        if($event = $image->event){
-            return new ResourcesEvent($event);
-        }
-        else {
-            return response()->json([
-                'message' => 'L\'événement de l\'image n\'a pas été trouvé'
-                ] , Response::HTTP_NOT_FOUND );
-        }
-    }
-
-        
-    /**
      * Method file [Get file of an image]
      *
      * @param int $image_id [Image id]
@@ -222,9 +202,9 @@ class ImageController extends Controller
      * @return Response
      */
     public function file(Image $image)
-    { 
+    {
         //php artisan storage:link before using this method
-        if ($file = public_path() . "\storage\\". $image->path . $image->name . '.' . $image->extension) {
+        if ($file = public_path() . "../../". $image->path . $image->name . '.' . $image->extension) {
             $response = FacadesResponse::make(file_get_contents($file), 200);
             $response->header('Content-Type', 'image/'. $image->extension);
             return $response;
@@ -244,9 +224,9 @@ class ImageController extends Controller
      * @return Response
      */
     public function download(Image $image)
-    { 
+    {
         //php artisan storage:link before using this method
-        if ($file = public_path() . "\storage\\". $image->path . $image->name . '.' . $image->extension) {
+        if ($file = public_path() . "../../". $image->path . $image->name . '.' . $image->extension) {
             return response()->download($file);
         }
         else{
@@ -255,7 +235,7 @@ class ImageController extends Controller
                 ] , Response::HTTP_NOT_FOUND );
         }
     }
-    
+
     /**
      * Method normalizeEventName [Normalize event name]
      *
