@@ -89,7 +89,11 @@ class AuthController extends Controller
 
     public function update(Request $request, User $user){
 
-        $validator = Validator::make($request->all(), User::updateRules());
+        if ($request->has('email') && $request->email === Auth::user()->email){
+            $request->request->remove('email');
+        }
+
+        $validator = Validator::make($request->all(), User::updateCurrentRules());
 
         if ($validator->fails()){
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -111,14 +115,21 @@ class AuthController extends Controller
 
     public function updateCurrent(Request $request){
 
-        $validator = Validator::make($request->all(), User::updateRules());
+        if ($request->has('email') && $request->email === Auth::user()->email){
+            $request->request->remove('email');
+        }
+        if ($request->has('group')){
+            $request->request->remove('group');
+        }
+
+        $validator = Validator::make($request->only('name','email'), User::updateRules());
 
         if ($validator->fails()){
-            return response()->json(['error' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
             $user = Auth::user();
-            if($user->update($request->all())){
+            if($user->update($request->only('name','email'))){
                 return response([
                     'message'=> 'Modification réussie!'
                 ],Response::HTTP_ACCEPTED);

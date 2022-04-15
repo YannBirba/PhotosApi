@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Group;
+use Illuminate\Validation\Rules\Password;
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -31,7 +33,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password',
+        'password'
     ];
     public function group()
     {
@@ -43,8 +45,16 @@ class User extends Authenticatable
         return [
             'group_id' => 'required|integer',
             'name' => 'required|string|max:255|min:3',
-            'email' => 'required|email|max:255|min:3|unique:users,email',
-            'password' => 'required|string|min:8|numeric',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => [
+             'required',
+            Password::min(8)
+            ->letters()
+            ->mixedCase()
+            ->numbers()
+            ->symbols()
+            ->uncompromised()
+            ],
             'is_admin' => 'required|boolean',
         ];
     }
@@ -54,8 +64,16 @@ class User extends Authenticatable
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email',
+            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
             'is_admin' => 'boolean',
+        ];
+    }
+
+    public static function updateCurrentRules()
+    {
+        return [
+            'name' => 'string|max:255|min:3',
+            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
         ];
     }
 
@@ -63,7 +81,6 @@ class User extends Authenticatable
     {
         return [
             'email' => 'required|email|max:255|min:3',
-            // 'password' => 'required|string|min:8|numeric',
         ];
     }
 }
