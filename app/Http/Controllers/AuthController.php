@@ -67,6 +67,7 @@ class AuthController extends Controller
                     'message'=> 'Erreur lors de la tentative de connexion'
                 ],Response::HTTP_UNAUTHORIZED);
             }
+                /** @var \App\Models\User $user **/
                 $user = Auth::user();
                 $token = $user->createToken('token')->plainTextToken;
                 $cookie = cookie('jwt', $token, 60*24);
@@ -128,6 +129,7 @@ class AuthController extends Controller
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         else{
+            /** @var \App\Models\User $user **/
             $user = Auth::user();
             if($user->update($request->only('name','email'))){
                 return response([
