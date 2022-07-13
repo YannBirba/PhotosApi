@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Group;
-use App\Models\Image;
 
 class Event extends Model
 {
     use HasFactory;
 
-     /**
+    /**
      * The attributes that are mass assignable.
      *
      * @var string[]
@@ -28,7 +26,7 @@ class Event extends Model
 
     public function groups()
     {
-        return $this->belongsToMany(Group::class,'group_event');
+        return $this->belongsToMany(Group::class, 'group_event');
     }
 
     public function image()
@@ -41,8 +39,8 @@ class Event extends Model
         return $this->hasMany(Image::class);
     }
 
-    public static function createRules() 
-    {   
+    public static function createRules()
+    {
         return [
             'name' => 'required|string|max:50',
             'description' => 'string|max:255',
@@ -53,8 +51,9 @@ class Event extends Model
             'year' => 'required|integer',
         ];
     }
-    public static function updateRules() 
-    {   
+
+    public static function updateRules()
+    {
         return [
             'name' => 'string|max:50',
             'description' => 'string|max:255',

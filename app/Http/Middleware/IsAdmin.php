@@ -18,9 +18,10 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        if(AuthController::isAdmin()) {
+        if (AuthController::isAdmin()) {
             return $next($request);
-          }
-          return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
     }
 }

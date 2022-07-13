@@ -41,7 +41,7 @@ class SpecialMigrate extends Command
      */
     public function handle()
     {
-        $basePath = 'database/migrations/'; 
+        $basePath = 'database/migrations/';
         $isDump = $this->option('d');
         if ($isDump == 'true') {
             Artisan::call('schema:dump');
@@ -51,30 +51,29 @@ class SpecialMigrate extends Command
             Artisan::call('db:wipe');
         }
 
-       /** Specify the names of the migrations files in the order you want to 
-        * loaded
-        * $migrations =[ 
-        *    'xxxx_xx_xx_000000_create_nameTable_table.php',
-        *];
-        */
-        $to_migrate_before = [ 
+        /** Specify the names of the migrations files in the order you want to
+         * loaded
+         * $migrations =[
+         *    'xxxx_xx_xx_000000_create_nameTable_table.php',
+         *];
+         */
+        $to_migrate_before = [
             '2021_12_11_180332_create_groups_table',
             '2021_12_11_201430_create_events_table',
             '2021_12_19_204544_create_images_table',
             '2021_12_19_211846_add_image_column_in_event_table',
         ];
         if ($to_migrate_before && count($to_migrate_before) > 0 && $to_migrate_before != null) {
-            foreach($to_migrate_before as $migration)
-            {         
-               $migrationName = trim($migration);
-               $path = $basePath.$migrationName.'.php';
-               $this->call('migrate', [
-                '--path' => $path ,            
-               ]);
+            foreach ($to_migrate_before as $migration) {
+                $migrationName = trim($migration);
+                $path = $basePath.$migrationName.'.php';
+                $this->call('migrate', [
+                    '--path' => $path,
+                ]);
             }
         }
 
-        $migrations = [ 
+        $migrations = [
             '2014_10_12_000000_create_users_table',
             '2014_10_12_100000_create_password_resets_table',
             '2019_12_14_000001_create_personal_access_tokens_table',
@@ -82,14 +81,13 @@ class SpecialMigrate extends Command
             '2021_12_11_203522_create_pivot_table_group_event',
         ];
         if ($migrations && count($migrations) > 0 && $migrations != null) {
-            foreach($migrations as $migration)
-            {
+            foreach ($migrations as $migration) {
                 $migrationName = trim($migration);
                 $path = $basePath.$migrationName.'.php';
                 $this->call('migrate', [
-                '--path' => $path ,            
+                    '--path' => $path,
                 ]);
             }
         }
     }
-} 
+}

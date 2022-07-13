@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use Illuminate\Http\Request;
 use App\Http\Resources\Event as ResourcesEvent;
 use App\Http\Resources\Image as ResourcesImage;
+use App\Models\Event;
 use App\Models\Group;
 use App\Models\Image;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,8 +35,10 @@ class EventController extends Controller
         $group_id = $user->group_id;
         $group = Group::find($group_id);
         $events = $group->events;
+
         return $events->sortByDesc('start_date')->values();
     }
+
     /**
      * Store a newly created event in storage.
      *
@@ -48,18 +50,15 @@ class EventController extends Controller
         $validator = Validator::make($request->all(), Event::createRules());
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-        else{
-            if(Event::create($request->all())){
+        } else {
+            if (Event::create($request->all())) {
                 return response()->json([
                     'message' => 'Evénement créé avec succès',
                 ], Response::HTTP_CREATED);
-            }
-            else
-            {
+            } else {
                 return response()->json([
-                    'message' => 'Erreur lors de la création de l\'evénement'
-                    ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+                    'message' => 'Erreur lors de la création de l\'evénement',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
     }
@@ -87,18 +86,15 @@ class EventController extends Controller
         $validator = Validator::make($request->all(), Event::updateRules());
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-        else{
-            if($event->update($request->all())){
+        } else {
+            if ($event->update($request->all())) {
                 return response()->json([
-                    'message' => 'Evénement modifié avec succès'
+                    'message' => 'Evénement modifié avec succès',
                 ], Response::HTTP_OK);
-            }
-            else
-            {
+            } else {
                 return response()->json([
-                    'message' => 'Erreur lors de la modification de l\'evénement'
-                    ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+                    'message' => 'Erreur lors de la modification de l\'evénement',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
         }
     }
@@ -111,41 +107,37 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        if(Image::where('event_id', $event->id)->first()){
+        if (Image::where('event_id', $event->id)->first()) {
             return response()->json(
                 [
-                    'message' => 'Impossible de supprimer l\'événement car il possède au moins image'
-                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+                    'message' => 'Impossible de supprimer l\'événement car il possède au moins image',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        if($event->groups->count( ) > 0){
+        if ($event->groups->count() > 0) {
             if ($event->groups()->detach()) {
+            } else {
+                return response()->json([
+                    'message' => 'Erreur lors du détachement des groupes liés a l\'événement',
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-            else {
-            return response()->json([
-                'message' => 'Erreur lors du détachement des groupes liés a l\'événement'
-                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
         }
 
-        if($event->delete()){
+        if ($event->delete()) {
             return response()->json([
-                'message' => 'Evénement supprimé avec succès'
+                'message' => 'Evénement supprimé avec succès',
             ], Response::HTTP_OK);
-        }
-        else
-        {
+        } else {
             return response()->json([
-                'message' => 'Erreur lors de la suppression de l\'événement'
-                ] , Response::HTTP_INTERNAL_SERVER_ERROR);
+                'message' => 'Erreur lors de la suppression de l\'événement',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     /**
      * Method get all groups of an event
      *
-     * @param int $event_id [Event id]
-     *
+     * @param  int  $event_id [Event id]
      * @return array
      */
     public function groups(Event $event)
@@ -153,12 +145,11 @@ class EventController extends Controller
         return ResourcesEvent::collection($event->groups);
     }
 
-     /**
+    /**
      * Method event
      *
-     * @param int $event_id [explicite description]
-     * @param Request $request [explicite description]
-     *
+     * @param  int  $event_id [explicite description]
+     * @param  Request  $request [explicite description]
      * @return Json
      */
     public function group(Event $event, Request $request)
@@ -168,28 +159,26 @@ class EventController extends Controller
             if ($event && $event !== null) {
                 $event->groups()->attach($group_id);
                 $group = Group::find($group_id);
+
                 return response()->json([
-                    'message' => 'Le groupe '. $group->name . 'a bien été lié à l\'événement '. $event->name . '.'
-                    ] , Response::HTTP_OK);
-            }
-            else{
+                    'message' => 'Le groupe '.$group->name.'a bien été lié à l\'événement '.$event->name.'.',
+                ], Response::HTTP_OK);
+            } else {
                 return response()->json([
-                    'message' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné'
-                    ] , Response::HTTP_NOT_FOUND);
+                    'message' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné',
+                ], Response::HTTP_NOT_FOUND);
             }
-        }
-        else{
+        } else {
             return response()->json([
-                'message' => 'Veuillez renseigner un groupe dans la requète'
-                ] , Response::HTTP_BAD_REQUEST);
+                'message' => 'Veuillez renseigner un groupe dans la requète',
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 
-     /**
+    /**
      * Method get all images from an event
      *
-     * @param int $event_id [Event id]
-     *
+     * @param  int  $event_id [Event id]
      * @return array
      */
     public function images(Event $event)
@@ -200,19 +189,17 @@ class EventController extends Controller
     /**
      * Method get image of an event
      *
-     * @param int $event_id [Event id]
-     *
+     * @param  int  $event_id [Event id]
      * @return array
      */
     public function image(Event $event)
     {
-        if($image = new ResourcesImage($event->image)){
+        if ($image = new ResourcesImage($event->image)) {
             return $image;
-        }
-        else {
+        } else {
             return response()->json([
-                'message' => 'L\'image de l\'événement n\'a pas été trouvée'
-                ] , Response::HTTP_NOT_FOUND);
+                'message' => 'L\'image de l\'événement n\'a pas été trouvée',
+            ], Response::HTTP_NOT_FOUND);
         }
     }
 }
