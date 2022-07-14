@@ -63,24 +63,19 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $validator = Validator::make($request->only('email', 'password'), User::loginRules());
+        $validator = Validator::make($request->only('email', 'password', 'remember'), User::loginRules());
 
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            if (!Auth::attempt($request->only('email', 'password'))) {
+            if (!Auth::attempt($request->only('email', 'password',), $request->input('remember'))) {
                 return response([
                     'message' => 'Erreur lors de la tentative de connexion',
                 ], Response::HTTP_UNAUTHORIZED);
             }
-            /** @var \App\Models\User $user * */
-            $user = Auth::user();
-            $token = $user->createToken('token')->plainTextToken;
-            $cookie = cookie('jwt', $token, 60 * 24);
-
             return response([
                 'message' => 'Connexion réussie!',
-            ], Response::HTTP_ACCEPTED)->withCookie($cookie);
+            ], Response::HTTP_ACCEPTED);
         }
     }
 
@@ -91,19 +86,13 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        return response()->json([
-            'message' => "Déconnexion réussie!",
-        ], Response::HTTP_ACCEPTED)->withCookie(Cookie::forget('XSRF-TOKEN'))->withCookie(Cookie::forget('photosapi_session'));
-
-        //         return response()->json([
-        //     'message' => "Déconnexion réussie!",
-        // ], Response::HTTP_ACCEPTED)->withCookie(Cookie::forget('jwt'));
-
-            // $cookie = Cookie::forget('jwt');
-            // return response([
-            //     'message'=> 'Déconnexion réussie!'
-            // ],Response::HTTP_ACCEPTED)->withCookie($cookie);
-
+        /** @var \App\Models\User $user * */
+        $user = Auth::user();
+        Auth::guard('web')->logout();
+        $user->tokens()->delete();
+        return response([
+            'message' => 'Déconnexion réussie!'
+        ], Response::HTTP_ACCEPTED);
     }
 
     public function update(Request $request, User $user)

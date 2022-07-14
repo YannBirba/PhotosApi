@@ -17,7 +17,7 @@ class Authenticate extends Middleware
     protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
-            return route('login');
+            return route('api/login');
         }
     }
 
@@ -33,7 +33,7 @@ class Authenticate extends Middleware
      */
     public function handle($request, Closure $next, ...$guards)
     {
-        if ($jwt = $request->cookie('jwt')) {
+        if ($jwt = $request->cookie('photosapi_session')) {
             $request->headers->set('Authorization', 'Bearer '.$jwt);
         }
         $this->authenticate($request, $guards);

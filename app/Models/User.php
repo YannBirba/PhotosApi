@@ -80,6 +80,8 @@ class User extends Authenticatable
     {
         return [
             'email' => 'required|email|max:255|min:3',
+            'password' => 'required|string',
+            'remember' => 'required|boolean',
         ];
     }
 }
