@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\Group as ResourcesGroup;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class User extends JsonResource
 {
@@ -16,13 +16,13 @@ class User extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'=>$this->id,
-            'name'=>$this->name,
-            'email'=>$this->email,
-            'is_admin'=>$this->is_admin,
-            'group'=> new ResourcesGroup($this->group),
-            'created_at'=>$this->created_at,
-            'updated_at'=>$this->updated_at,
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'is_admin' => $this->is_admin,
+            'group' => new ResourcesGroup($this->group),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

@@ -17,10 +17,11 @@ class Authenticate extends Middleware
     protected function redirectTo($request)
     {
         if (! $request->expectsJson()) {
-            return route('login');
+            return route('api/login');
         }
     }
-        /**
+
+    /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -32,15 +33,15 @@ class Authenticate extends Middleware
      */
     public function handle($request, Closure $next, ...$guards)
     {
-        if($jwt = $request->cookie('jwt')){
-            $request->headers->set('Authorization','Bearer '. $jwt);
+        if ($jwt = $request->cookie('photosapi_session')) {
+            $request->headers->set('Authorization', 'Bearer '.$jwt);
         }
         $this->authenticate($request, $guards);
 
         return $next($request);
     }
 
-        /**
+    /**
      * Handle an unauthenticated user.
      *
      * @param  \Illuminate\Http\Request  $request

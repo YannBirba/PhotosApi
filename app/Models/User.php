@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use App\Models\Group;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -33,8 +31,9 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password'
+        'password',
     ];
+
     public function group()
     {
         return $this->belongsTo(Group::class);
@@ -47,13 +46,13 @@ class User extends Authenticatable
             'name' => 'required|string|max:255|min:3',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => [
-             'required',
-            Password::min(8)
-            ->letters()
-            ->mixedCase()
-            ->numbers()
-            ->symbols()
-            ->uncompromised()
+                'required',
+                Password::min(8)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+                ->uncompromised(),
             ],
             'is_admin' => 'required|boolean',
         ];
@@ -64,7 +63,7 @@ class User extends Authenticatable
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
             'is_admin' => 'boolean',
         ];
     }
@@ -73,7 +72,7 @@ class User extends Authenticatable
     {
         return [
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
         ];
     }
 
@@ -81,6 +80,8 @@ class User extends Authenticatable
     {
         return [
             'email' => 'required|email|max:255|min:3',
+            'password' => 'required|string',
+            'remember' => 'required|boolean',
         ];
     }
 }

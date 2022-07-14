@@ -15,15 +15,15 @@ class Image extends JsonResource
     public function toArray($request)
     {
         return [
-            'id'=>$this->id,
-            'event'=>$this->event,
-            'path'=>$this->path,
-            'name'=>$this->name,
-            'extension'=>$this->extension,
-            'alt'=>$this->alt,
-            'title'=>$this->title,
-            'created_at'=>$this->created_at,
-            'updated_at'=>$this->updated_at,
+            'id' => $this->id,
+            'event' => $this->event,
+            'path' => $this->path,
+            'name' => $this->name,
+            'extension' => $this->extension,
+            'alt' => $this->alt,
+            'title' => $this->title,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }
