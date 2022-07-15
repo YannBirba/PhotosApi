@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Group as ResourcesGroup;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class User extends JsonResource

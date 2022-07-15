@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Event as ResourcesEvent;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class Group extends JsonResource
@@ -21,7 +20,7 @@ class Group extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'users' => $this->users,
-            'events' => ResourcesEvent::collection($this->events),
+            'events' => $this->events,
         ];
     }
 }
