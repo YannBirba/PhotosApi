@@ -22,6 +22,6 @@ class IsAdmin
             return $next($request);
         }
 
-        return response()->json(['error' => 'Non autorisé'], Response::HTTP_UNAUTHORIZED);
+        return response()->json(['error' => 'Non autorisé ! Il faut être administrateur pour accéder à cette fonctionnalité'], Response::HTTP_UNAUTHORIZED);
     }
 }

@@ -48,11 +48,11 @@ class User extends Authenticatable
             'password' => [
                 'required',
                 Password::min(8)
-                ->letters()
-                ->mixedCase()
-                ->numbers()
-                ->symbols()
-                ->uncompromised(),
+                    ->letters()
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols()
+                    ->uncompromised(),
             ],
             'is_admin' => 'required|boolean',
         ];
@@ -63,7 +63,7 @@ class User extends Authenticatable
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
             'is_admin' => 'boolean',
         ];
     }
@@ -72,7 +72,7 @@ class User extends Authenticatable
     {
         return [
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
         ];
     }
 

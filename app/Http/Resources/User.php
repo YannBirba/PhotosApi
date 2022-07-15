@@ -20,7 +20,7 @@ class User extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'is_admin' => $this->is_admin,
-            'group' => new ResourcesGroup($this->group),
+            'group' => $this->group,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

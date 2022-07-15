@@ -6,9 +6,8 @@ use App\Http\Resources\User as ResourcesUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Response as FacadesResponse;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,7 +20,10 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        return new ResourcesUser($user);
+        // return new ResourcesUser($user);
+        return new ResourcesUser(Cache::remember('user', now()->addDay(1), function () use ($user) {
+            return $user;
+        }));
     }
 
     public function index()
