@@ -152,5 +152,6 @@ return [
         'title' => 'titre',
         'path' => 'chemin',
         'extension' => 'extension',
+        'password_confirmation' => 'confirmation du mot de passe',
     ],
 ];

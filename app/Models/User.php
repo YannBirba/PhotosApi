@@ -47,12 +47,15 @@ class User extends Authenticatable
             'email' => 'required|string|email|max:255|unique:users',
             'password' => [
                 'required',
-                Password::min(8)
+                'confirmed',
+                env('APP_ENV') === 'production' ??
+                    Password::min(8)
                     ->letters()
                     ->mixedCase()
                     ->numbers()
                     ->symbols()
                     ->uncompromised(),
+
             ],
             'is_admin' => 'required|boolean',
         ];

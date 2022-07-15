@@ -42,7 +42,7 @@ class AuthController extends Controller
                 'group_id' => $request->input('group_id'),
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
-                'password' => Hash::make($request->input('password')),                                                   //https://youtu.be/jIzPuM76-nI
+                'password' => Hash::make($request->input('password')),
                 'is_admin' => $request->input('is_admin'),
             ]);
 
