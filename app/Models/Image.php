@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Resources\Image as ImageResource;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class Image extends Model
 {
@@ -46,5 +49,14 @@ class Image extends Model
             'alt' => 'string|max:255',
             'title' => 'string|max:255',
         ];
+    }
+
+    public static function resource(User | Collection $data): ImageResource | AnonymousResourceCollection
+    {
+        if ($data instanceof Collection) {
+            return ImageResource::collection($data);
+        } else {
+            return new ImageResource($data);
+        }
     }
 }

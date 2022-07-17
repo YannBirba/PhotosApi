@@ -7,6 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Sanctum\HasApiTokens;
+use App\Http\Resources\User as UserResource;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class User extends Authenticatable
 {
@@ -32,6 +35,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     public function group()
@@ -86,5 +90,14 @@ class User extends Authenticatable
             'password' => 'required|string',
             'remember' => 'required|boolean',
         ];
+    }
+
+    public static function resource(User | Collection $data): UserResource | AnonymousResourceCollection
+    {
+        if ($data instanceof Collection) {
+            return UserResource::collection($data);
+        } else {
+            return new UserResource($data);
+        }
     }
 }

@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Resources\Group as GroupResource;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class Group extends Model
 {
@@ -33,5 +36,14 @@ class Group extends Model
         return [
             'name' => 'required|string|max:50|min:3|unique:groups',
         ];
+    }
+
+    public static function resource(User | Collection $data): GroupResource | AnonymousResourceCollection
+    {
+        if ($data instanceof Collection) {
+            return GroupResource::collection($data);
+        } else {
+            return new GroupResource($data);
+        }
     }
 }

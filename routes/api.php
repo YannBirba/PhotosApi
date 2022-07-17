@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('userlist', 'index');
             Route::get('/user/{user}', 'show');
             Route::put('user/{user}', 'update');
+            Route::delete('/user/{user}', 'destroy');
         });
 
         Route::controller(GroupController::class)->group(function () {
@@ -49,7 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/event', 'store');
             Route::put('/event/{event}', 'update');
             Route::delete('/event/{event}', 'destroy');
-            Route::delete('/user/{user}', 'destroy');
         });
 
         Route::controller(ImageController::class)->group(function () {
