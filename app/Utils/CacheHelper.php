@@ -21,14 +21,30 @@ class CacheHelper
 
     public static function delete(string | Model | Collection | array $toForget): bool
     {
-        // TODO : implement cache delete for collection when an item is deleted or update this item
-        Cache::lock(self::key($toForget))->get(function () use ($toForget) {
-            if (Cache::forget(self::key($toForget))) {
-                return true;
-            } else {
+        if (!$toForget instanceof Model) {
+            Cache::lock(self::key($toForget))->get(function () use ($toForget) {
+                if (Cache::forget(self::key($toForget))) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+        } else {
+            Cache::lock($toForget->getTable())->get(function () use ($toForget) {
+                if (Cache::has($toForget->getTable()) && Cache::forget($toForget->getTable())) {
+                    Cache::lock(self::key($toForget))->get(function () use ($toForget) {
+                        if (Cache::forget(self::key($toForget))) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                        return false;
+                    });
+                }
                 return false;
-            }
-        });
+            });
+        }
+
         return false;
     }
 
@@ -39,9 +55,16 @@ class CacheHelper
 
     public static function update(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
     {
-        // TODO : implement cache delete for collection when an item is deleted or update this item
         Cache::lock(self::key($data))->get(function () use ($data, $cacheTime) {
             if (self::delete($data)) {
+                if ($data instanceof Model && Cache::missing($data->getTable())) {
+                    Cache::lock($data->getTable())->get(function () use ($data, $cacheTime) {
+                        $resource = get_class($data)::all();
+                        Cache::remember($data->getTable(), $cacheTime, function () use ($resource) {
+                            return $resource;
+                        });
+                    });
+                }
                 return self::get($data, $cacheTime);
             }
             return null;
