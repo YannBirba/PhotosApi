@@ -1,9 +1,22 @@
 # PhotosApi
- 
-## Utiliser Laravel IDE Helper
+
+## Laravel IDE Helper
 
 ### Générer les models helper
 
 ```bash
-   $ php artisan ide-helper:models -F helpers/ModelHelper.php -M
+$ php artisan ide-helper:models
+```
+Dire oui lorsqu'il propose d'écrire la PhpDoc de la classe.
+
+## Laravel Pint
+
+```bash
+$ php ./vendor/bin/pint
+```
+
+## Larastan
+
+```bash
+$ php ./vendor/bin/phpstan analyse
 ```

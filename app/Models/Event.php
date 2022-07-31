@@ -10,7 +10,42 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * @mixin IdeHelperEvent
+ * App\Models\Event
+ *
+ * @property int $id
+ * @property int|null $image_id
+ * @property string $name
+ * @property string|null $description
+ * @property string|null $location
+ * @property string $year
+ * @property string $start_date
+ * @property string|null $end_date
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read Collection|\App\Models\Group[] $groups
+ * @property-read int|null $groups_count
+ * @property-read \App\Models\Image|null $image
+ * @property-read Collection|\App\Models\Image[] $images
+ * @property-read int|null $images_count
+ * @method static \Database\Factories\EventFactory factory(...$parameters)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Event newQuery()
+ * @method static \Illuminate\Database\Query\Builder|Event onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Event query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereEndDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereImageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereLocation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereStartDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Event whereYear($value)
+ * @method static \Illuminate\Database\Query\Builder|Event withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Event withoutTrashed()
  */
 class Event extends Model
 {

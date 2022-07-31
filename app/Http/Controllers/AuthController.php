@@ -8,6 +8,7 @@ use App\Utils\CacheHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -19,11 +20,17 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class AuthController extends Controller
 {
+    /**
+     * Method user
+     *
+     * @return JsonResponse
+     */
     public function user(): ResourcesUser | JsonResponse
     {
-        $user = Auth::user();
-        if ($toReturn = CacheHelper::get($user)) {
-            return $toReturn;
+        if ($user = Auth::user()) {
+            if ($toReturn = CacheHelper::get($user)) {
+                return $toReturn;
+            }
         }
 
         return response()->json([
@@ -31,6 +38,11 @@ class AuthController extends Controller
         ], Response::HTTP_NOT_FOUND);
     }
 
+    /**
+     * Method index
+     *
+     * @return AnonymousResourceCollection
+     */
     public function index(): AnonymousResourceCollection | JsonResponse
     {
         if ($toReturn = CacheHelper::get(User::all())) {
@@ -42,6 +54,13 @@ class AuthController extends Controller
         ], Response::HTTP_NOT_FOUND);
     }
 
+    /**
+     * Method register
+     *
+     * @param Request $request [explicite description]
+     *
+     * @return JsonResponse
+     */
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->only(['group_id', 'name', 'email', 'password', 'password_confirmation', 'is_admin']), User::createRules());
@@ -64,6 +83,13 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Method show
+     *
+     * @param User $user [explicite description]
+     *
+     * @return ResourcesUser
+     */
     public static function show(User $user): ResourcesUser | JsonResponse
     {
         Cache::flush();
@@ -80,7 +106,7 @@ class AuthController extends Controller
      * Method to login a user
      *
      * @param  Request  $request [Actual http request]
-     * @return void
+     * @return JsonResponse
      */
     public function login(Request $request): JsonResponse
     {
@@ -107,11 +133,11 @@ class AuthController extends Controller
     /**
      * Method to logout a user
      *
-     * @return void
+     * @return JsonResponse
      */
     public function logout(): JsonResponse
     {
-        $user = self::user();
+        $user = Auth::user();
         Auth::guard('web')->logout();
         $user->tokens()->delete();
 
@@ -120,6 +146,14 @@ class AuthController extends Controller
         ], Response::HTTP_ACCEPTED);
     }
 
+    /**
+     * Method update
+     *
+     * @param Request $request [Request]
+     * @param User $user [User to update]
+     *
+     * @return JsonResponse
+     */
     public function update(Request $request, User $user): JsonResponse
     {
         if ($request->has('email') && $request->email === Auth::user()->email) {
@@ -146,6 +180,13 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Method updateCurrent
+     *
+     * @param Request $request [Request]
+     *
+     * @return JsonResponse
+     */
     public function updateCurrent(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -178,6 +219,13 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Method destroy
+     *
+     * @param User $user [User to delete]
+     *
+     * @return JsonResponse
+     */
     public static function destroy(User $user): JsonResponse
     {
         if ($user->delete() && CacheHelper::delete($user)) {
@@ -191,6 +239,13 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Method isAdmin
+     *
+     * @param User $user [User to check]
+     *
+     * @return bool
+     */
     public static function isAdmin(User $user = null): bool
     {
         if ($user === null) {

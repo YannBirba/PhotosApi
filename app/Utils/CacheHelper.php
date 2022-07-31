@@ -16,7 +16,7 @@ class CacheHelper
 {
     public static function get(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
     {
-        $cacheTime = $cacheTime ?? now()->addDay(1);
+        $cacheTime = $cacheTime ?? now()->addDay();
         $resource = self::resource($data);
         if ($toReturn = Cache::remember(self::key($data), $cacheTime, function () use ($resource): JsonResource | AnonymousResourceCollection {
             return $resource;

@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use App\Models\Image;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response as FacadesResponse;
 use Illuminate\Support\Facades\Validator;
@@ -18,9 +20,9 @@ class ImageController extends Controller
     /**
      * Display a listing of the images.
      *
-     * @return \Illuminate\Http\Response
+     * @return AnonymousResourceCollection
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return ResourcesImage::collection(Image::orderBy('created_at', 'desc')->get());
     }
@@ -28,10 +30,10 @@ class ImageController extends Controller
     /**
      * Store a newly created image in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  Request $request
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $fileDestinationPath = '';
         $file = '';
@@ -41,14 +43,14 @@ class ImageController extends Controller
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
             if ($file = $request->file('file')) {
-                $fileDestinationPath = $this->storageBasePath.Event::find($request->input('event_id'))->year.'/'.$this->normalizeEventName(Event::find($request->input('event_id'))->name).'/';
-                if (! File::exists($fileDestinationPath.$this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.$file->getClientOriginalName())) {
-                    $file->move('../'.$fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.$file->getClientOriginalName());
+                $fileDestinationPath = $this->storageBasePath . Event::find($request->input('event_id'))->year . '/' . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '/';
+                if (!File::exists($fileDestinationPath . $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName())) {
+                    $file->move('../' . $fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . $file->getClientOriginalName());
                     if (
                         Image::create([
                             'event_id' => $request->input('event_id'),
                             'path' => $fileDestinationPath,
-                            'name' => $this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                            'name' => $this->normalizeEventName(Event::find($request->input('event_id'))->name) . '__' . pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
                             'extension' => pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION),
                             'alt' => $request->input('alt'),
                             'title' => $request->input('title'),
@@ -78,10 +80,10 @@ class ImageController extends Controller
     /**
      * Display the specified image.
      *
-     * @param  \App\Models\Image  $Image
-     * @return \Illuminate\Http\Response
+     * @param  Image $image
+     * @return ResourcesImage
      */
-    public function show(Image $image)
+    public function show(Image $image): ResourcesImage
     {
         return new ResourcesImage($image);
     }
@@ -89,11 +91,11 @@ class ImageController extends Controller
     /**
      * Update the specified image in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $image_id
-     * @return \Illuminate\Http\Response
+     * @param  Request $request
+     * @param  Image $image
+     * @return JsonResponse
      */
-    public function update(Request $request, Image $image)
+    public function update(Request $request, Image $image): JsonResponse
     {
         $fileDestinationPath = '';
         $file = '';
@@ -103,26 +105,26 @@ class ImageController extends Controller
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
             if ($file = $request->file('file')) {
-                $path = storage_path().'../'.$image->path.$image->name.'.'.$image->extension;
+                $path = storage_path() . '../' . $image->path . $image->name . '.' . $image->extension;
                 if (File::exists($path)) {
                     if (unlink($path)) {
-                        if (! File::exists($path)) {
+                        if (!File::exists($path)) {
                             if (intval($request->input('event_id')) !== $image->event_id) {
                                 $image->update([
                                     'event_id' => intval($request->input('event_id')),
                                 ]);
                             }
-                            $fileDestinationPath = $this->storageBasePath.Event::find($image->event_id)->year.'/'.$this->normalizeEventName(Event::find($image->event_id)->name).'/';
+                            $fileDestinationPath = $this->storageBasePath . Event::find($image->event_id)->year . '/' . $this->normalizeEventName(Event::find($image->event_id)->name) . '/';
                             if (
                                 $image->update([
                                     'path' => $fileDestinationPath,
-                                    'name' => $this->normalizeEventName(Event::find($image->event_id)->name).'__'.pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                                    'name' => $this->normalizeEventName(Event::find($image->event_id)->name) . '__' . pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
                                     'extension' => pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION),
                                     'alt' => $request->input('alt'),
                                     'title' => $request->input('title'),
                                 ])
                             ) {
-                                $file->move('storage/'.$fileDestinationPath, $image->name.'.'.$image->extension);
+                                $file->move('storage/' . $fileDestinationPath, $image->name . '.' . $image->extension);
 
                                 return response()->json([
                                     'message' => 'Image modifiée avec succès',
@@ -158,12 +160,13 @@ class ImageController extends Controller
     /**
      * Remove the specified image from storage.
      *
-     * @param  \App\Models\Image  $image
+     * @param  Image $image
+     * @return JsonResponse
      */
-    public function destroy(Image $image)
+    public function destroy(Image $image): JsonResponse
     {
-        $imageStoragePath = storage_path().'../'.$image->path;
-        $path = $imageStoragePath.$image->name.'.'.$image->extension;
+        $imageStoragePath = storage_path() . '../' . $image->path;
+        $path = $imageStoragePath . $image->name . '.' . $image->extension;
         if (File::exists($path)) {
             if (unlink($path) && $image->delete()) {
                 return response()->json([
@@ -184,15 +187,15 @@ class ImageController extends Controller
     /**
      * Method file [Get file of an image]
      *
-     * @param  int  $image_id [Image id]
-     * @return Response
+     * @param  Image  $image [The image to get file]
+     * @return JsonResponse
      */
-    public function file(Image $image)
+    public function file(Image $image): JsonResponse
     {
         //php artisan storage:link before using this method
-        if ($file = public_path().'../../'.$image->path.$image->name.'.'.$image->extension) {
+        if ($file = public_path() . '../../' . $image->path . $image->name . '.' . $image->extension) {
             $response = FacadesResponse::make(file_get_contents($file), 200);
-            $response->header('Content-Type', 'image/'.$image->extension);
+            $response->header('Content-Type', 'image/' . $image->extension);
 
             return $response;
         } else {
@@ -205,13 +208,13 @@ class ImageController extends Controller
     /**
      * Method file [Get file of an image]
      *
-     * @param  int  $image_id [Image id]
-     * @return Response
+     * @param  Image $image [The image to download file]
+     * @return JsonResponse
      */
-    public function download(Image $image)
+    public function download(Image $image): JsonResponse
     {
         //php artisan storage:link before using this method
-        if ($file = public_path().'../../'.$image->path.$image->name.'.'.$image->extension) {
+        if ($file = public_path() . '../../' . $image->path . $image->name . '.' . $image->extension) {
             return response()->download($file);
         } else {
             return response()->json([
@@ -228,11 +231,13 @@ class ImageController extends Controller
      */
     private function normalizeEventName(string $eventName): string
     {
-        $allAccentLetters = ['Š' => 'S', 'š' => 's', 'Ž' => 'Z', 'ž' => 'z', 'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+        $allAccentLetters = [
+            'Š' => 'S', 'š' => 's', 'Ž' => 'Z', 'ž' => 'z', 'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
             'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O', 'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U',
             'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c',
             'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'õ' => 'o',
-            'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'þ' => 'b', 'ÿ' => 'y', ];
+            'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'þ' => 'b', 'ÿ' => 'y',
+        ];
         $eventName = strtr($eventName, $allAccentLetters);
         $allSpecialChars = ['/', '\\', ':', ';', '!', '@', '#', '$', '%', '^', '*', '(', ')', '+', '=', '|', '{', '}', '[', ']', '"', "'", '<', '>', ',', '?', '~', '`', '&', ' ', '.'];
         $replace = array_combine($allSpecialChars, array_fill(0, count($allSpecialChars), '_'));

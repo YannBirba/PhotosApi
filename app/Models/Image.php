@@ -10,7 +10,36 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
- * @mixin IdeHelperImage
+ * App\Models\Image
+ *
+ * @property int $id
+ * @property int $event_id
+ * @property string|null $path
+ * @property string|null $name
+ * @property string|null $extension
+ * @property string|null $alt
+ * @property string|null $title
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Event $event
+ * @method static \Database\Factories\ImageFactory factory(...$parameters)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Image newQuery()
+ * @method static \Illuminate\Database\Query\Builder|Image onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|Image query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereAlt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereExtension($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image wherePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Image whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Query\Builder|Image withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Image withoutTrashed()
  */
 class Image extends Model
 {

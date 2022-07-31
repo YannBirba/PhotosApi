@@ -6,7 +6,9 @@ use App\Http\Resources\Group as ResourcesGroup;
 use App\Http\Resources\User as ResourcesUser;
 use App\Models\Event;
 use App\Models\Group;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -50,10 +52,10 @@ class GroupController extends Controller
     /**
      * Display the specified group.
      *
-     * @param  \App\Models\Group  $group
-     * @return \Illuminate\Http\Response
+     * @param Group  $group
+     * @return ResourcesGroup
      */
-    public function show(ResourcesGroup $group)
+    public function show(Group $group): ResourcesGroup
     {
         return new ResourcesGroup($group);
     }
@@ -118,10 +120,10 @@ class GroupController extends Controller
     /**
      * Method get all users from a group
      *
-     * @param  int  $group_id [Group id]
-     * @return array
+     * @param  Group $group [Group to get users]
+     * @return AnonymousResourceCollection
      */
-    public function users(Group $group)
+    public function users(Group $group): AnonymousResourceCollection
     {
         return ResourcesUser::collection($group->users);
     }
@@ -129,11 +131,11 @@ class GroupController extends Controller
     /**
      * Method event
      *
-     * @param  int  $group_id [explicite description]
-     * @param  Request  $request [explicite description]
-     * @return Json
+     * @param  Group $group [Group to link event]
+     * @param  Request  $request [Request]
+     * @return JsonResponse
      */
-    public function event(Group $group, Request $request)
+    public function event(Group $group, Request $request): JsonResponse
     {
         $event_id = ($request->input('event_id'));
         if ($event_id !== null && $event_id) {

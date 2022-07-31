@@ -2,8 +2,12 @@ includes:
     - ./vendor/nunomaduro/larastan/extension.neon
 
 parameters:
-  level: 9
+  level: 3
   paths:
     - app
-  scanDirectories:
-    - ./helpers
+  excludePaths:
+    - ./app/Exceptions/Handler.php
+  universalObjectCratesClasses:
+    - Illuminate\Http\Resources\Json\JsonResource
+    - Illuminate\Database\Eloquent\Model
+# https://github.com/nunomaduro/larastan/issues/508#issuecomment-604320866

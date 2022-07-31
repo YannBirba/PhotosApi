@@ -7,7 +7,9 @@ use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use App\Models\Group;
 use App\Models\Image;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -137,10 +139,10 @@ class EventController extends Controller
     /**
      * Method get all groups of an event
      *
-     * @param  int  $event_id [Event id]
-     * @return array
+     * @param  Event  $event [Event to get groups]
+     * @return AnonymousResourceCollection
      */
-    public function groups(Event $event)
+    public function groups(Event $event): AnonymousResourceCollection
     {
         return ResourcesEvent::collection($event->groups);
     }
@@ -148,11 +150,11 @@ class EventController extends Controller
     /**
      * Method event
      *
-     * @param  int  $event_id [explicite description]
-     * @param  Request  $request [explicite description]
-     * @return Json
+     * @param  Event  $event [Event to link group]
+     * @param  Request  $request [Request]
+     * @return JsonResponse
      */
-    public function group(Event $event, Request $request)
+    public function group(Event $event, Request $request): JsonResponse
     {
         $group_id = ($request->input('group_id'));
         if ($group_id !== null && $group_id) {
@@ -178,10 +180,10 @@ class EventController extends Controller
     /**
      * Method get all images from an event
      *
-     * @param  int  $event_id [Event id]
-     * @return array
+     * @param  Event $event [Event to get images]
+     * @return AnonymousResourceCollection
      */
-    public function images(Event $event)
+    public function images(Event $event): AnonymousResourceCollection
     {
         return ResourcesImage::collection($event->images);
     }
@@ -189,10 +191,10 @@ class EventController extends Controller
     /**
      * Method get image of an event
      *
-     * @param  int  $event_id [Event id]
-     * @return array
+     * @param  Event  $event [Event to get image]
+     * @return ResourcesImage
      */
-    public function image(Event $event)
+    public function image(Event $event): JsonResponse | ResourcesImage
     {
         if ($image = new ResourcesImage($event->image)) {
             return $image;
