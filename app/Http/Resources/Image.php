@@ -22,6 +22,7 @@ class Image extends JsonResource
             'extension' => $this->extension,
             'alt' => $this->alt,
             'title' => $this->title,
+            'deleted_at' => $this->deleted_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

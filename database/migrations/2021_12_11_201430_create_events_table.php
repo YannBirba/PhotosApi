@@ -21,7 +21,12 @@ class CreateEventsTable extends Migration
             $table->year('year')->default(date('Y'));
             $table->dateTime('start_date');
             $table->dateTime('end_date')->nullable();
+            $table->softDeletes();
             $table->timestamps();
+            // $table->fullText(['name', 'description', 'location', 'year', 'start_date', 'end_date']);
+            $table->fullText('name');
+            $table->fullText('description');
+            $table->fullText('location');
         });
     }
 

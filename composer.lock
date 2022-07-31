@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cf059a16971aeab5990775933e160f40",
+    "content-hash": "8f03a675b2af8256365c7110808d06a2",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -5552,16 +5552,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v0.2.3",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "d0829631687c1238abdd660daac3d7218254b65c"
+                "reference": "16cccd66169f926308fefb21ddbc03a261ca7e79"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/d0829631687c1238abdd660daac3d7218254b65c",
-                "reference": "d0829631687c1238abdd660daac3d7218254b65c",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/16cccd66169f926308fefb21ddbc03a261ca7e79",
+                "reference": "16cccd66169f926308fefb21ddbc03a261ca7e79",
                 "shasum": ""
             },
             "require": {
@@ -5614,7 +5614,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2022-07-04T16:04:06+00:00"
+            "time": "2022-07-26T15:32:23+00:00"
         },
         {
             "name": "laravel/sail",

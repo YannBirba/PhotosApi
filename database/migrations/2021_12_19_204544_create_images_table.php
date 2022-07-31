@@ -22,7 +22,12 @@ class CreateImagesTable extends Migration
             $table->string('extension')->nullable();
             $table->string('alt')->nullable();
             $table->string('title')->nullable();
+            $table->softDeletes();
             $table->timestamps();
+            // $table->fullText(['name', 'alt', 'title']);
+            $table->fullText('name');
+            $table->fullText('alt');
+            $table->fullText('title');
         });
     }
 

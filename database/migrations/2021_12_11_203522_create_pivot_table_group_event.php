@@ -17,6 +17,7 @@ class CreatePivotTableGroupEvent extends Migration
             $table->id();
             $table->foreignId('group_id')->constrained()->onDelete('cascade');
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

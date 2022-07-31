@@ -22,6 +22,7 @@ class Event extends JsonResource
             'year' => $this->year,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
+            'deleted_at' => $this->deleted_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'location' => $this->location,

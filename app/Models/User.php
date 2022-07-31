@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Validation\Rules\Password;
-use Laravel\Sanctum\HasApiTokens;
 use App\Http\Resources\User as UserResource;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\Rules\Password;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -62,6 +62,7 @@ class User extends Authenticatable
 
             ],
             'is_admin' => 'required|boolean',
+            'is_active' => 'required|boolean',
         ];
     }
 
@@ -70,8 +71,9 @@ class User extends Authenticatable
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
             'is_admin' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -79,7 +81,8 @@ class User extends Authenticatable
     {
         return [
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
+            'is_active' => 'boolean',
         ];
     }
 

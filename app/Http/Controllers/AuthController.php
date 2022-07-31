@@ -4,34 +4,45 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\User as ResourcesUser;
 use App\Models\User;
+use App\Utils\CacheHelper;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
-use App\Utils\CacheHelper;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 /**
  * AuthController class
  */
 class AuthController extends Controller
 {
-    public function user(): ResourcesUser
+    public function user(): ResourcesUser | JsonResponse
     {
         /**
          * @var User $user
          */
         $user = Auth::user();
-        return CacheHelper::get($user);
+        if ($toReturn = CacheHelper::get($user)) {
+            return $toReturn;
+        }
+
+        return response()->json([
+            'message' => "L'utilisateur n'a pas été trouvé",
+        ], Response::HTTP_NOT_FOUND);
     }
 
     public function index(): AnonymousResourceCollection
     {
-        return CacheHelper::get(User::all());
+        if ($toReturn = CacheHelper::get(User::all())) {
+            return $toReturn;
+        }
+
+        return response()->json([
+            'message' => "Aucun utilisateur n'a été trouvé",
+        ], Response::HTTP_NOT_FOUND);
     }
 
     public function register(Request $request): JsonResponse
@@ -58,7 +69,14 @@ class AuthController extends Controller
 
     public static function show(User $user): ResourcesUser
     {
-        return CacheHelper::get($user);
+        Cache::flush();
+        if ($toReturn = CacheHelper::get($user)) {
+            return $toReturn;
+        }
+
+        return response()->json([
+            'message' => "L'utilisateur n'a pas été trouvé",
+        ], Response::HTTP_NOT_FOUND);
     }
 
     /**
@@ -74,7 +92,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            if (!Auth::attempt($request->only('email', 'password',), $request->input('remember'))) {
+            if (! Auth::attempt($request->only('email', 'password', ), $request->input('remember'))) {
                 return response()->json([
                     'message' => 'Erreur lors de la tentative de connexion',
                 ], Response::HTTP_UNAUTHORIZED);
@@ -84,6 +102,7 @@ class AuthController extends Controller
              */
             $user = Auth::user();
             $data = CacheHelper::get($user);
+
             return response()->json([
                 'message' => 'Connexion réussie!',
                 'data' => $data,
@@ -101,8 +120,9 @@ class AuthController extends Controller
         $user = self::user();
         Auth::guard('web')->logout();
         $user->tokens()->delete();
+
         return response()->json([
-            'message' => 'Déconnexion réussie!'
+            'message' => 'Déconnexion réussie!',
         ], Response::HTTP_ACCEPTED);
     }
 
@@ -119,6 +139,7 @@ class AuthController extends Controller
         } else {
             if ($user->update($request->all())) {
                 $data = CacheHelper::get($user);
+
                 return response()->json([
                     'message' => 'Modification réussie!',
                     'data' => $data,
@@ -133,6 +154,12 @@ class AuthController extends Controller
 
     public function updateCurrent(Request $request): JsonResponse
     {
+        /**
+         * @var User $user
+         */
+        $user = Auth::user();
+        $oldUser = clone $user;
+
         if ($request->has('email') && $request->email === Auth::user()->email) {
             $request->request->remove('email');
         }
@@ -145,12 +172,9 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            /**
-             * @var User $user
-             */
-            $user = Auth::user();
-            if ($user->update($request->only('name', 'email'))) {
-                $data = CacheHelper::update($user);
+            if ($user->update($request->only('name', 'email')) && $oldUser) {
+                $data = CacheHelper::update($oldUser, $user);
+
                 return response()->json([
                     'message' => 'Modification réussie!',
                     'data' => $data,
@@ -165,11 +189,10 @@ class AuthController extends Controller
 
     public static function destroy(User $user): JsonResponse
     {
-        if ($user->delete()) {
-            CacheHelper::delete($user);
+        if ($user->delete() && CacheHelper::delete($user)) {
             return response()->json([
                 'message' => 'Suppression réussie!',
-            ], Response::HTTP_ACCEPTED);
+            ], Response::HTTP_OK);
         } else {
             return response()->json([
                 'message' => 'Erreur lors de la suppression',
@@ -189,6 +212,7 @@ class AuthController extends Controller
                 return true;
             }
         }
+
         return false;
     }
 }

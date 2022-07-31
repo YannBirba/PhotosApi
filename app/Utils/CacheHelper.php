@@ -2,73 +2,70 @@
 
 namespace App\Utils;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * CacheHelper class : Provides a set of methods to manage cache
+ */
 class CacheHelper
 {
-    public static function get(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection
+    public static function get(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
     {
         $cacheTime = $cacheTime ?? now()->addDay(1);
         $resource = self::resource($data);
-        return Cache::remember(self::key($data), $cacheTime, function () use ($resource) {
+        if ($toReturn = Cache::remember(self::key($data), $cacheTime, function () use ($resource): JsonResource | AnonymousResourceCollection {
             return $resource;
-        });
-    }
-
-    public static function delete(string | Model | Collection | array $toForget): bool
-    {
-        if (!$toForget instanceof Model) {
-            Cache::lock(self::key($toForget))->get(function () use ($toForget) {
-                if (Cache::forget(self::key($toForget))) {
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-        } else {
-            Cache::lock($toForget->getTable())->get(function () use ($toForget) {
-                if (Cache::has($toForget->getTable()) && Cache::forget($toForget->getTable())) {
-                    Cache::lock(self::key($toForget))->get(function () use ($toForget) {
-                        if (Cache::forget(self::key($toForget))) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                        return false;
-                    });
-                }
-                return false;
-            });
+        })) {
+            return $toReturn;
         }
 
-        return false;
+        return null;
     }
 
-    public static function forget(string | Model | Collection | array $toForget): bool
+    public static function delete(Model | Collection $toForget): bool
+    {
+        if ($toForget instanceof Collection) {
+            if (self::has($toForget)) {
+                if (Cache::forget(self::key($toForget))) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return true;
+        } else {
+            if (self::has($toForget->getTable())) {
+                Cache::forget($toForget->getTable());
+            }
+            if (self::has($toForget)) {
+                if (Cache::forget(self::key($toForget))) {
+                    return true;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    public static function forget(Model | Collection $toForget): bool
     {
         return self::delete($toForget);
     }
 
-    public static function update(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
+    public static function update(Model | Collection $oldData, Model | Collection $updatedData, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
     {
-        Cache::lock(self::key($data))->get(function () use ($data, $cacheTime) {
-            if (self::delete($data)) {
-                if ($data instanceof Model && Cache::missing($data->getTable())) {
-                    Cache::lock($data->getTable())->get(function () use ($data, $cacheTime) {
-                        $resource = get_class($data)::all();
-                        Cache::remember($data->getTable(), $cacheTime, function () use ($resource) {
-                            return $resource;
-                        });
-                    });
-                }
-                return self::get($data, $cacheTime);
-            }
-            return null;
-        });
+        if (self::delete($oldData)) {
+            return self::get($updatedData, $cacheTime);
+        }
+
         return null;
     }
 
@@ -77,12 +74,13 @@ class CacheHelper
         if (is_string($data)) {
             return $data;
         } elseif ($data instanceof Model) {
-            return $data->getTable() . '_' . $data->id;
+            return $data->getTable().'_'.$data->id;
         } elseif ($data instanceof Collection) {
             return $data->first()->getTable();
         } elseif (is_array($data)) {
             return $data[0]->getTable();
         }
+
         return null;
     }
 
@@ -91,11 +89,19 @@ class CacheHelper
         if ($data instanceof Model) {
             return get_class($data);
         }
+
         return get_class($data->first());
     }
 
     public static function resource(Model | Collection $data): JsonResource | AnonymousResourceCollection
     {
-        return self::class($data)::resource($data);
+        return DB::transaction(function () use ($data): JsonResource | AnonymousResourceCollection {
+            return self::class($data)::resource($data);
+        });
+    }
+
+    public static function has(string | Model | Collection | array $data): bool
+    {
+        return Cache::has(self::key($data));
     }
 }
