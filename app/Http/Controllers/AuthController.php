@@ -34,7 +34,7 @@ class AuthController extends Controller
         ], Response::HTTP_NOT_FOUND);
     }
 
-    public function index(): AnonymousResourceCollection
+    public function index(): AnonymousResourceCollection | JsonResponse
     {
         if ($toReturn = CacheHelper::get(User::all())) {
             return $toReturn;
@@ -67,7 +67,7 @@ class AuthController extends Controller
         }
     }
 
-    public static function show(User $user): ResourcesUser
+    public static function show(User $user): ResourcesUser | JsonResponse
     {
         Cache::flush();
         if ($toReturn = CacheHelper::get($user)) {
