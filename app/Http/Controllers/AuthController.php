@@ -21,9 +21,6 @@ class AuthController extends Controller
 {
     public function user(): ResourcesUser | JsonResponse
     {
-        /**
-         * @var User $user
-         */
         $user = Auth::user();
         if ($toReturn = CacheHelper::get($user)) {
             return $toReturn;
@@ -97,9 +94,6 @@ class AuthController extends Controller
                     'message' => 'Erreur lors de la tentative de connexion',
                 ], Response::HTTP_UNAUTHORIZED);
             }
-            /**
-             * @var User $user
-             */
             $user = Auth::user();
             $data = CacheHelper::get($user);
 
@@ -154,9 +148,6 @@ class AuthController extends Controller
 
     public function updateCurrent(Request $request): JsonResponse
     {
-        /**
-         * @var User $user
-         */
         $user = Auth::user();
         $oldUser = clone $user;
 

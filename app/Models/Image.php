@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
+/**
+ * @mixin IdeHelperImage
+ */
 class Image extends Model
 {
     use HasFactory, SoftDeletes;
