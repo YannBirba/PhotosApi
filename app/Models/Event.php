@@ -28,6 +28,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  * @property-read \App\Models\Image|null $image
  * @property-read Collection|\App\Models\Image[] $images
  * @property-read int|null $images_count
+ *
  * @method static \Database\Factories\EventFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|Event newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Event newQuery()

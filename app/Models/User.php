@@ -28,6 +28,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read \App\Models\Group $group
  * @property-read Collection|\Laravel\Sanctum\PersonalAccessToken[] $tokens
  * @property-read int|null $tokens_count
+ *
  * @method static \Database\Factories\UserFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
@@ -67,7 +68,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array
+     * @var array<string>
      */
     protected $hidden = [
         'password',

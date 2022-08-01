@@ -12,11 +12,23 @@ Dire oui lorsqu'il propose d'écrire la PhpDoc de la classe.
 ## Laravel Pint
 
 ```bash
-$ php ./vendor/bin/pint
+$ composer pint
 ```
 
 ## Larastan
 
 ```bash
-$ php ./vendor/bin/phpstan analyse
+$ composer phpstan
+```
+
+## Pestle
+
+```bash
+$ composer test
+```
+
+## Check
+
+```bash
+$ composer check
 ```

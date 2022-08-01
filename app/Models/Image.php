@@ -23,6 +23,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Event $event
+ *
  * @method static \Database\Factories\ImageFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|Image newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Image newQuery()

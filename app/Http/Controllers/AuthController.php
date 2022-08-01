@@ -8,7 +8,6 @@ use App\Utils\CacheHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
@@ -23,7 +22,7 @@ class AuthController extends Controller
     /**
      * Method user
      *
-     * @return JsonResponse
+     * @return ResourcesUser|JsonResponse
      */
     public function user(): ResourcesUser | JsonResponse
     {
@@ -43,7 +42,7 @@ class AuthController extends Controller
      *
      * @return AnonymousResourceCollection
      */
-    public function index(): AnonymousResourceCollection | JsonResponse
+    public function index(): AnonymousResourceCollection
     {
         if ($toReturn = CacheHelper::get(User::all())) {
             return $toReturn;
@@ -57,8 +56,7 @@ class AuthController extends Controller
     /**
      * Method register
      *
-     * @param Request $request [explicite description]
-     *
+     * @param  Request  $request [explicite description]
      * @return JsonResponse
      */
     public function register(Request $request): JsonResponse
@@ -86,13 +84,11 @@ class AuthController extends Controller
     /**
      * Method show
      *
-     * @param User $user [explicite description]
-     *
-     * @return ResourcesUser
+     * @param  User  $user [explicite description]
+     * @return ResourcesUser|JsonResponse
      */
     public static function show(User $user): ResourcesUser | JsonResponse
     {
-        Cache::flush();
         if ($toReturn = CacheHelper::get($user)) {
             return $toReturn;
         }
@@ -149,9 +145,8 @@ class AuthController extends Controller
     /**
      * Method update
      *
-     * @param Request $request [Request]
-     * @param User $user [User to update]
-     *
+     * @param  Request  $request [Request]
+     * @param  User  $user [User to update]
      * @return JsonResponse
      */
     public function update(Request $request, User $user): JsonResponse
@@ -183,8 +178,7 @@ class AuthController extends Controller
     /**
      * Method updateCurrent
      *
-     * @param Request $request [Request]
-     *
+     * @param  Request  $request [Request]
      * @return JsonResponse
      */
     public function updateCurrent(Request $request): JsonResponse
@@ -222,8 +216,7 @@ class AuthController extends Controller
     /**
      * Method destroy
      *
-     * @param User $user [User to delete]
-     *
+     * @param  User  $user [User to delete]
      * @return JsonResponse
      */
     public static function destroy(User $user): JsonResponse
@@ -242,8 +235,7 @@ class AuthController extends Controller
     /**
      * Method isAdmin
      *
-     * @param User $user [User to check]
-     *
+     * @param  User  $user [User to check]
      * @return bool
      */
     public static function isAdmin(User $user = null): bool

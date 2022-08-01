@@ -17,9 +17,9 @@ class GroupController extends Controller
     /**
      * Display a listing of groups.
      *
-     * @return \Illuminate\Http\Response
+     * @return AnonymousResourceCollection
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return ResourcesGroup::collection(Group::all());
     }
@@ -27,10 +27,10 @@ class GroupController extends Controller
     /**
      * Store a newly created group in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), Group::rules());
 
@@ -52,7 +52,7 @@ class GroupController extends Controller
     /**
      * Display the specified group.
      *
-     * @param Group  $group
+     * @param  Group  $group
      * @return ResourcesGroup
      */
     public function show(Group $group): ResourcesGroup
@@ -63,11 +63,11 @@ class GroupController extends Controller
     /**
      * Update the specified group in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Group  $group
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @param  Group  $group
+     * @return JsonResponse
      */
-    public function update(Request $request, Group $group)
+    public function update(Request $request, Group $group): JsonResponse
     {
         $validator = Validator::make($request->all(), Group::rules());
 
@@ -89,10 +89,10 @@ class GroupController extends Controller
     /**
      * Remove the specified group from storage.
      *
-     * @param  \App\Models\Group  $group
-     * @return \Illuminate\Http\Response
+     * @param  Group  $group
+     * @return JsonResponse
      */
-    public function destroy(Group $group)
+    public function destroy(Group $group): JsonResponse
     {
         if ($group->events()->detach()) {
             if ($group->users()->delete()) {
@@ -120,7 +120,7 @@ class GroupController extends Controller
     /**
      * Method get all users from a group
      *
-     * @param  Group $group [Group to get users]
+     * @param  Group  $group [Group to get users]
      * @return AnonymousResourceCollection
      */
     public function users(Group $group): AnonymousResourceCollection
@@ -131,7 +131,7 @@ class GroupController extends Controller
     /**
      * Method event
      *
-     * @param  Group $group [Group to link event]
+     * @param  Group  $group [Group to link event]
      * @param  Request  $request [Request]
      * @return JsonResponse
      */

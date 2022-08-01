@@ -2,7 +2,7 @@ includes:
     - ./vendor/nunomaduro/larastan/extension.neon
 
 parameters:
-  level: 3
+  level: 3g
   paths:
     - app
   excludePaths:
@@ -11,3 +11,4 @@ parameters:
     - Illuminate\Http\Resources\Json\JsonResource
     - Illuminate\Database\Eloquent\Model
 # https://github.com/nunomaduro/larastan/issues/508#issuecomment-604320866
+

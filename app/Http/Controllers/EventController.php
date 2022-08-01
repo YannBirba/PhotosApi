@@ -19,9 +19,9 @@ class EventController extends Controller
     /**
      * Display a listing of events.
      *
-     * @return \Illuminate\Http\Response
+     * @return AnonymousResourceCollection
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return ResourcesEvent::collection(Event::orderBy('start_date', 'desc')->get());
     }
@@ -29,9 +29,9 @@ class EventController extends Controller
     /**
      * return all event of the user group from the actual year group_id come from group_event pivot table
      *
-     * @return \Illuminate\Http\Response
+     * @return AnonymousResourceCollection
      */
-    public function usergroupindex()
+    public function usergroupindex(): AnonymousResourceCollection
     {
         $user = Auth::user();
         $group_id = $user->group_id;
@@ -44,10 +44,10 @@ class EventController extends Controller
     /**
      * Store a newly created event in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), Event::createRules());
         if ($validator->fails()) {
@@ -68,10 +68,10 @@ class EventController extends Controller
     /**
      * Display the specified event.
      *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
+     * @param  Event  $event
+     * @return ResourcesEvent
      */
-    public function show(Event $event)
+    public function show(Event $event): ResourcesEvent
     {
         return new ResourcesEvent($event);
     }
@@ -79,11 +79,11 @@ class EventController extends Controller
     /**
      * Update the specified event in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @param  Event  $event
+     * @return JsonResponse
      */
-    public function update(Request $request, Event $event)
+    public function update(Request $request, Event $event): JsonResponse
     {
         $validator = Validator::make($request->all(), Event::updateRules());
         if ($validator->fails()) {
@@ -104,10 +104,10 @@ class EventController extends Controller
     /**
      * Remove the specified event from storage.
      *
-     * @param  \App\Models\Event  $event
-     * @return \Illuminate\Http\Response
+     * @param  Event  $event
+     * @return JsonResponse
      */
-    public function destroy(Event $event)
+    public function destroy(Event $event): JsonResponse
     {
         if (Image::where('event_id', $event->id)->first()) {
             return response()->json(
@@ -180,7 +180,7 @@ class EventController extends Controller
     /**
      * Method get all images from an event
      *
-     * @param  Event $event [Event to get images]
+     * @param  Event  $event [Event to get images]
      * @return AnonymousResourceCollection
      */
     public function images(Event $event): AnonymousResourceCollection
@@ -192,7 +192,7 @@ class EventController extends Controller
      * Method get image of an event
      *
      * @param  Event  $event [Event to get image]
-     * @return ResourcesImage
+     * @return JsonResponse|ResourcesImage
      */
     public function image(Event $event): JsonResponse | ResourcesImage
     {

@@ -21,6 +21,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
  * @property-read int|null $events_count
  * @property-read Collection|\App\Models\User[] $users
  * @property-read int|null $users_count
+ *
  * @method static \Database\Factories\GroupFactory factory(...$parameters)
  * @method static \Illuminate\Database\Eloquent\Builder|Group newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Group newQuery()
