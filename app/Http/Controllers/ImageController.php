@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use App\Models\Image;
+use App\Utils\CacheHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -48,7 +49,7 @@ class ImageController extends Controller
                 if (! File::exists($fileDestinationPath.$this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.$file->getClientOriginalName())) {
                     $file->move('../'.$fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.$file->getClientOriginalName());
                     if (
-                        Image::create([
+                        $image = Image::create([
                             'event_id' => $request->input('event_id'),
                             'path' => $fileDestinationPath,
                             'name' => $this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
@@ -59,22 +60,20 @@ class ImageController extends Controller
                     ) {
                         return response()->json([
                             'message' => 'Image créée avec succès',
+                            'data' => CacheHelper::get($image)
                         ], Response::HTTP_CREATED);
-                    } else {
-                        return response()->json([
-                            'message' => 'Erreur lors de la création de l\'image',
-                        ], Response::HTTP_INTERNAL_SERVER_ERROR);
                     }
-                } else {
                     return response()->json([
-                        'message' => 'L\'image existe déjà',
-                    ], Response::HTTP_UNPROCESSABLE_ENTITY);
+                        'message' => 'Erreur lors de la création de l\'image',
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
-            } else {
                 return response()->json([
-                    'message' => 'Pas d\'image dans la requête',
-                ], Response::HTTP_BAD_REQUEST);
+                    'message' => 'L\'image existe déjà',
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
+            return response()->json([
+                'message' => 'Pas d\'image dans la requête',
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -130,31 +129,26 @@ class ImageController extends Controller
                                 return response()->json([
                                     'message' => 'Image modifiée avec succès',
                                 ], Response::HTTP_OK);
-                            } else {
-                                return response()->json([
-                                    'message' => 'Erreur lors de la modification de l\'image',
-                                ], Response::HTTP_INTERNAL_SERVER_ERROR);
                             }
-                        } else {
                             return response()->json([
-                                'message' => 'Erreur lors de la supression de l\'image',
+                                'message' => "Erreur lors de la modification de l'image",
                             ], Response::HTTP_INTERNAL_SERVER_ERROR);
                         }
-                    } else {
                         return response()->json([
-                            'message' => 'Erreur lors de la supression de l\'ancienne image',
+                            'message' => "Erreur lors de la supression de l'image",
                         ], Response::HTTP_INTERNAL_SERVER_ERROR);
                     }
-                } else {
                     return response()->json([
-                        'message' => 'Le fichier n\'a pas été trouvé',
-                    ], Response::HTTP_NOT_FOUND);
+                        'message' => "Erreur lors de la supression de l'ancienne image",
+                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
-            } else {
                 return response()->json([
-                    'error' => 'Pas d\'image dans la requête',
-                ], Response::HTTP_BAD_REQUEST);
+                    'message' => "Le fichier n'a pas été trouvé",
+                ], Response::HTTP_NOT_FOUND);
             }
+            return response()->json([
+                'error' => "Pas d'image dans la requête",
+            ], Response::HTTP_BAD_REQUEST);
         }
     }
 
@@ -173,16 +167,14 @@ class ImageController extends Controller
                 return response()->json([
                     'message' => 'Image supprimée avec succès',
                 ], Response::HTTP_OK);
-            } else {
-                return response()->json([
-                    'message' => 'Erreur lors de la suppression de l\'image',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-        } else {
             return response()->json([
-                'message' => 'Le fichier n\'a pas été trouvé',
-            ], Response::HTTP_NOT_FOUND);
+                'message' => 'Erreur lors de la suppression de l\'image',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        return response()->json([
+            'message' => 'Le fichier n\'a pas été trouvé',
+        ], Response::HTTP_NOT_FOUND);
     }
 
     /**
@@ -202,11 +194,10 @@ class ImageController extends Controller
             ], Response::HTTP_OK, [
                 'Content-Type' => 'image/'.$image->extension,
             ]);
-        } else {
-            return response()->json([
-                'message' => 'Le fichier n\'a pas été trouvé',
-            ], Response::HTTP_NOT_FOUND);
         }
+        return response()->json([
+            'message' => 'Le fichier n\'a pas été trouvé',
+        ], Response::HTTP_NOT_FOUND);
     }
 
     /**
@@ -220,11 +211,10 @@ class ImageController extends Controller
         //php artisan storage:link before using this method
         if ($file = public_path().'../../'.$image->path.$image->name.'.'.$image->extension) {
             return response()->download($file);
-        } else {
-            return response()->json([
-                'message' => 'Le fichier n\'a pas été trouvé',
-            ], Response::HTTP_NOT_FOUND);
         }
+        return response()->json([
+            'message' => 'Le fichier n\'a pas été trouvé',
+        ], Response::HTTP_NOT_FOUND);
     }
 
     /**

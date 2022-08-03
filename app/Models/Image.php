@@ -6,6 +6,7 @@ use App\Http\Resources\Image as ImageResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -49,7 +50,7 @@ class Image extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var string[]
+     * @var array<int,string>
      */
     protected $fillable = [
         'event_id',
@@ -60,12 +61,22 @@ class Image extends Model
         'title',
     ];
 
-    public function event()
+    /**
+     * Method event
+     *
+     * @return BelongsTo<Event,Image>
+     */
+    public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
     }
 
-    public static function createRules()
+    /**
+     * Method createRules
+     *
+     * @return array<string,string>
+     */
+    public static function createRules(): array
     {
         return [
             'event_id' => 'required|integer',
@@ -75,7 +86,12 @@ class Image extends Model
         ];
     }
 
-    public static function updateRules()
+    /**
+     * Method createRules
+     *
+     * @return array<string,string>
+     */
+    public static function updateRules(): array
     {
         return [
             'event_id' => 'integer',
@@ -85,7 +101,14 @@ class Image extends Model
         ];
     }
 
-    public static function resource(User | Collection $data): ImageResource | AnonymousResourceCollection
+    /**
+     * Method resource
+     *
+     * @param Image|Collection<int,Image> $data [Data to be used to create the resource]
+     *
+     * @return ImageResource|AnonymousResourceCollection
+     */
+    public static function resource(Image | Collection $data): ImageResource | AnonymousResourceCollection
     {
         if ($data instanceof Collection) {
             return ImageResource::collection($data);

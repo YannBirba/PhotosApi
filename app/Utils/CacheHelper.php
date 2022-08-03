@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\DB;
  */
 class CacheHelper
 {
+    /**
+     * Method get
+     *
+     * @param Model|Collection<int,Model> $data [Data to cache]
+     * @param int $cacheTime [Time in seconds]
+     *
+     * @return JsonResource|AnonymousResourceCollection|null
+     */
     public static function get(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
     {
         $cacheTime = $cacheTime ?? now()->addDay();
@@ -27,6 +35,13 @@ class CacheHelper
         return null;
     }
 
+    /**
+     * Method delete
+     *
+     * @param Model|Collection<int,Model>  $toForget [Data to forget]
+     *
+     * @return bool
+     */
     public static function delete(Model | Collection $toForget): bool
     {
         if ($toForget instanceof Collection) {
@@ -55,11 +70,27 @@ class CacheHelper
         }
     }
 
+    /**
+     * Method forget
+     *
+     * @param Model|Collection<int,Model> $toForget [Data to forget]
+     *
+     * @return bool
+     */
     public static function forget(Model | Collection $toForget): bool
     {
         return self::delete($toForget);
     }
 
+    /**
+     * Method update
+     *
+     * @param Model|Collection<int,Model> $oldData [Old data]
+     * @param Model|Collection<int,Model> $updatedData [Updated data]
+     * @param int $cacheTime [Time in seconds]
+     *
+     * @return JsonResource|AnonymousResourceCollection|null
+     */
     public static function update(Model | Collection $oldData, Model | Collection $updatedData, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
     {
         if (self::delete($oldData)) {
@@ -69,6 +100,13 @@ class CacheHelper
         return null;
     }
 
+    /**
+     * Method key
+     *
+     * @param string|Model|Collection<int,Model>|array<int,Model> $data [Data to get key]
+     *
+     * @return string|null
+     */
     public static function key(string | Model | Collection | array $data): string | null
     {
         if (is_string($data)) {
@@ -84,6 +122,13 @@ class CacheHelper
         return null;
     }
 
+    /**
+     * Method class
+     *
+     * @param Model|Collection<int,Model> $data [Data to get class]
+     *
+     * @return string
+     */
     public static function class(Model | Collection $data): string
     {
         if ($data instanceof Model) {
@@ -93,6 +138,13 @@ class CacheHelper
         return get_class($data->first());
     }
 
+    /**
+     * Method resource
+     *
+     * @param Model|Collection<int,Model> $data [Data to get resource]
+     *
+     * @return JsonResource|AnonymousResourceCollection
+     */
     public static function resource(Model | Collection $data): JsonResource | AnonymousResourceCollection
     {
         return DB::transaction(function () use ($data): JsonResource | AnonymousResourceCollection {
@@ -100,6 +152,13 @@ class CacheHelper
         });
     }
 
+    /**
+     * Method has
+     *
+     * @param string|Model|Collection<int,Model>|array<int,Model> $data [Data to check]
+     *
+     * @return bool
+     */
     public static function has(string | Model | Collection | array $data): bool
     {
         return Cache::has(self::key($data));

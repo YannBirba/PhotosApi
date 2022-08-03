@@ -36,17 +36,15 @@ class GroupController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            if (Group::create($request->all())) {
-                return response()->json([
-                    'message' => 'Groupe créé avec succès',
-                ], Response::HTTP_CREATED);
-            } else {
-                return response()->json([
-                    'message' => 'Une erreur est survenue lors de la création du groupe',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
         }
+        if (Group::create($request->all())) {
+            return response()->json([
+                'message' => 'Groupe créé avec succès',
+            ], Response::HTTP_CREATED);
+        }
+        return response()->json([
+            'message' => 'Une erreur est survenue lors de la création du groupe',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -78,11 +76,10 @@ class GroupController extends Controller
                 return response()->json([
                     'message' => 'Groupe modifié avec succès',
                 ], Response::HTTP_OK);
-            } else {
-                return response()->json([
-                    'message' => 'Une erreur est survenue lors de la modification du groupe',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+            return response()->json([
+                'message' => 'Une erreur est survenue lors de la modification du groupe',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -100,21 +97,18 @@ class GroupController extends Controller
                     return response()->json([
                         'message' => 'Groupe supprimé avec succès',
                     ], Response::HTTP_OK);
-                } else {
-                    return response()->json([
-                        'message' => 'Erreur lors de la suppression du groupe',
-                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
-            } else {
                 return response()->json([
-                    'message' => 'Erreur lors de la suppression des utilisateurs rattachés au groupe',
+                    'message' => 'Erreur lors de la suppression du groupe',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
-        } else {
             return response()->json([
-                'message' => 'Erreur lors du détachement des événements liés au groupe',
+                'message' => 'Erreur lors de la suppression des utilisateurs rattachés au groupe',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        return response()->json([
+            'message' => 'Erreur lors du détachement des événements liés au groupe',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -144,17 +138,15 @@ class GroupController extends Controller
                 $event = Event::find($event_id);
 
                 return response()->json([
-                    'message' => 'L\'événement '.$event->name.' a bien été lié au groupe '.$group->name.'.',
+                    'message' => 'L\'événement ' . $event->name . ' a bien été lié au groupe ' . $group->name . '.',
                 ], Response::HTTP_OK);
-            } else {
-                return response()->json([
-                    'message' => 'Aucun groupe n\'a été trouvé pour l\'identifiant renseigné',
-                ], Response::HTTP_NOT_FOUND);
             }
-        } else {
             return response()->json([
-                'message' => 'Veuillez renseigner un événement dans la requète',
-            ], Response::HTTP_BAD_REQUEST);
+                'message' => 'Aucun groupe n\'a été trouvé pour l\'identifiant renseigné',
+            ], Response::HTTP_NOT_FOUND);
         }
+        return response()->json([
+            'message' => 'Veuillez renseigner un événement dans la requète',
+        ], Response::HTTP_BAD_REQUEST);
     }
 }

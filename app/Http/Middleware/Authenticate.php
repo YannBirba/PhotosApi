@@ -26,7 +26,7 @@ class Authenticate extends Middleware
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  string[]  ...$guards
+     * @param  array<string> ...$guards
      * @return mixed
      *
      * @throws \Illuminate\Auth\AuthenticationException
@@ -45,7 +45,7 @@ class Authenticate extends Middleware
      * Handle an unauthenticated user.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  array  $guards
+     * @param  array<string>  $guards
      * @return void
      *
      * @throws \Illuminate\Auth\AuthenticationException

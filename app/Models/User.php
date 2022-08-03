@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Http\Resources\User as UserResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -55,7 +56,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var string[]
+     * @var array<int,string>
      */
     protected $fillable = [
         'group_id',
@@ -68,19 +69,29 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var array<string>
+     * @var array<int,string>
      */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    public function group()
+    /**
+     * Method group
+     *
+     * @return BelongsTo<Group,User>
+     */
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class);
     }
 
-    public static function createRules()
+    /**
+     * Method createRules
+     *
+     * @return array<string,array<int,Password|string>|string>
+     */
+    public static function createRules(): array
     {
         return [
             'group_id' => 'required|integer',
@@ -89,13 +100,13 @@ class User extends Authenticatable
             'password' => [
                 'required',
                 'confirmed',
-                env('APP_ENV') === 'production' ??
-                    Password::min(8)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-                    ->uncompromised(),
+                env('APP_ENV') === 'production' ?
+                    (Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                        ->uncompromised()) : 'required|string',
 
             ],
             'is_admin' => 'required|boolean',
@@ -103,27 +114,42 @@ class User extends Authenticatable
         ];
     }
 
-    public static function updateRules()
+    /**
+     * Method updateRules
+     *
+     * @return array<string,string>
+     */
+    public static function updateRules(): array
     {
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
 
-    public static function updateCurrentRules()
+    /**
+     * Method updateCurrentRules
+     *
+     * @return array<string,string>
+     */
+    public static function updateCurrentRules(): array
     {
         return [
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,'.auth()->user()->id,
+            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
             'is_active' => 'boolean',
         ];
     }
 
-    public static function loginRules()
+    /**
+     * Method loginRules
+     *
+     * @return array<string,string>
+     */
+    public static function loginRules(): array
     {
         return [
             'email' => 'required|email|max:255|min:3',
@@ -132,6 +158,13 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Method resource
+     *
+     * @param User|Collection<int,User> $data [Date to be used to create the resource]
+     *
+     * @return UserResource|AnonymousResourceCollection
+     */
     public static function resource(User | Collection $data): UserResource | AnonymousResourceCollection
     {
         if ($data instanceof Collection) {

@@ -7,6 +7,7 @@ use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use App\Models\Group;
 use App\Models\Image;
+use App\Utils\CacheHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -53,15 +54,15 @@ class EventController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            if (Event::create($request->all())) {
+            if ($event = Event::create($request->all())) {
                 return response()->json([
                     'message' => 'Evénement créé avec succès',
+                    'data' => CacheHelper::get($event)
                 ], Response::HTTP_CREATED);
-            } else {
-                return response()->json([
-                    'message' => 'Erreur lors de la création de l\'evénement',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'evénement',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -165,16 +166,14 @@ class EventController extends Controller
                 return response()->json([
                     'message' => 'Le groupe '.$group->name.'a bien été lié à l\'événement '.$event->name.'.',
                 ], Response::HTTP_OK);
-            } else {
-                return response()->json([
-                    'message' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné',
-                ], Response::HTTP_NOT_FOUND);
             }
-        } else {
             return response()->json([
-                'message' => 'Veuillez renseigner un groupe dans la requète',
-            ], Response::HTTP_BAD_REQUEST);
+                'message' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné',
+            ], Response::HTTP_NOT_FOUND);
         }
+        return response()->json([
+            'message' => 'Veuillez renseigner un groupe dans la requète',
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     /**

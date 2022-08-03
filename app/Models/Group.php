@@ -6,6 +6,8 @@ use App\Http\Resources\Group as GroupResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -42,30 +44,52 @@ class Group extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var string[]
+     * @var array<int,string>
      */
     protected $fillable = [
         'name',
     ];
 
-    public function users()
+    /**
+     * Method users
+     *
+     * @return HasMany<User>
+     */
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    public function events()
+    /**
+     * Method events
+     *
+     * @return BelongsToMany<Event>
+     */
+    public function events(): BelongsToMany
     {
         return $this->belongsToMany(Event::class, 'group_event');
     }
 
-    public static function rules()
+    /**
+     * Method rules
+     *
+     * @return array<string,string>
+     */
+    public static function rules(): array
     {
         return [
             'name' => 'required|string|max:50|min:3|unique:groups',
         ];
     }
 
-    public static function resource(User | Collection $data): GroupResource | AnonymousResourceCollection
+    /**
+     * Method resource
+     *
+     * @param Group|Collection<int,Group> $data [Data to be used to create the resource]
+     *
+     * @return GroupResource|AnonymousResourceCollection
+     */
+    public static function resource(Group | Collection $data): GroupResource | AnonymousResourceCollection
     {
         if ($data instanceof Collection) {
             return GroupResource::collection($data);

@@ -6,6 +6,9 @@ use App\Http\Resources\Event as EventResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -55,7 +58,7 @@ class Event extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var string[]
+     * @var array<int,string>
      */
     protected $fillable = [
         'name',
@@ -67,22 +70,42 @@ class Event extends Model
         'end_date',
     ];
 
-    public function groups()
+    /**
+     * Method groups
+     *
+     * @return BelongsToMany<Group>
+     */
+    public function groups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class, 'group_event');
     }
 
-    public function image()
+    /**
+     * Method image
+     *
+     * @return BelongsTo<Image,Event>
+     */
+    public function image(): BelongsTo
     {
         return $this->belongsTo(Image::class);
     }
 
-    public function images()
+    /**
+     * Method images
+     *
+     * @return HasMany<Image>
+     */
+    public function images(): HasMany
     {
         return $this->hasMany(Image::class);
     }
 
-    public static function createRules()
+    /**
+     * Method createRules
+     *
+     * @return array<string,string>
+     */
+    public static function createRules(): array
     {
         return [
             'name' => 'required|string|max:50',
@@ -95,7 +118,12 @@ class Event extends Model
         ];
     }
 
-    public static function updateRules()
+    /**
+     * Method updateRules
+     *
+     * @return array<string,string>
+     */
+    public static function updateRules(): array
     {
         return [
             'name' => 'string|max:50',
@@ -108,7 +136,14 @@ class Event extends Model
         ];
     }
 
-    public static function resource(User | Collection $data): EventResource | AnonymousResourceCollection
+    /**
+     * Method resource
+     *
+     * @param Event|Collection<int,Event> $data [Data to be used to create the resource]
+     *
+     * @return EventResource|AnonymousResourceCollection
+     */
+    public static function resource(Event | Collection $data): EventResource | AnonymousResourceCollection
     {
         if ($data instanceof Collection) {
             return EventResource::collection($data);
