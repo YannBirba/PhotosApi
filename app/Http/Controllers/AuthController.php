@@ -55,6 +55,22 @@ class AuthController extends Controller
     }
 
     /**
+     * Method indexWithTrashed
+     *
+     * @return AnonymousResourceCollection
+     */
+    public function indexWithTrashed(): AnonymousResourceCollection | JsonResponse{
+        $toReturn = CacheHelper::get(User::withTrashed()->get());
+        if ($toReturn && $toReturn instanceof AnonymousResourceCollection) {
+            return $toReturn;
+        }
+
+        return response()->json([
+            'message' => "Aucun utilisateur n'a été trouvé",
+        ], Response::HTTP_NOT_FOUND);
+    }
+
+    /**
      * Method register
      *
      * @param  Request  $request [explicite description]
@@ -92,7 +108,7 @@ class AuthController extends Controller
      * @param  User  $user [explicite description]
      * @return ResourcesUser|JsonResponse
      */
-    public static function show(User $user): ResourcesUser | JsonResponse
+    public function show(User $user): ResourcesUser | JsonResponse
     {
         $toReturn = CacheHelper::get($user);
         if ($toReturn && $toReturn instanceof ResourcesUser) {
@@ -243,7 +259,7 @@ class AuthController extends Controller
      * @param  User  $user [User to delete]
      * @return JsonResponse
      */
-    public static function destroy(User $user): JsonResponse
+    public function destroy(User $user): JsonResponse
     {
         if ($user->delete() && CacheHelper::delete($user)) {
             return response()->json([
@@ -252,6 +268,39 @@ class AuthController extends Controller
         } else {
             return response()->json([
                 'message' => 'Erreur lors de la suppression',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * Method permanentDestroy
+     *
+     * @param User $user [explicite description]
+     *
+     * @return JsonResponse
+     */
+    public function permanentDestroy(User $user): JsonResponse
+    {
+        if ($user->forceDelete() && CacheHelper::delete($user)) {
+            return response()->json([
+                'message' => 'Suppression réussie!',
+            ], Response::HTTP_OK);
+        } else {
+            return response()->json([
+                'message' => 'Erreur lors de la suppression',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+    }
+
+    public function restore(User $user): JsonResponse
+    {
+        if ($user->trashed() && $user->restore() && CacheHelper::get($user)) {
+            return response()->json([
+                'message' => 'Restauration réussie!',
+            ], Response::HTTP_OK);
+        } else {
+            return response()->json([
+                'message' => 'Erreur lors de la restauration',
             ], Response::HTTP_UNAUTHORIZED);
         }
     }
