@@ -6,6 +6,8 @@ use App\Http\Resources\Group as ResourcesGroup;
 use App\Http\Resources\User as ResourcesUser;
 use App\Models\Event;
 use App\Models\Group;
+use App\Utils\CacheHelper;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -37,11 +39,14 @@ class GroupController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        if (Group::create($request->all())) {
+
+        if ($group = Group::create($request->all())) {
             return response()->json([
                 'message' => 'Groupe créé avec succès',
+                'data' => CacheHelper::get($group)
             ], Response::HTTP_CREATED);
         }
+
         return response()->json([
             'message' => 'Une erreur est survenue lors de la création du groupe',
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -71,16 +76,17 @@ class GroupController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            if ($group->update($request->all())) {
-                return response()->json([
-                    'message' => 'Groupe modifié avec succès',
-                ], Response::HTTP_OK);
-            }
-            return response()->json([
-                'message' => 'Une erreur est survenue lors de la modification du groupe',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+        
+        if ($group->update($request->all())) {
+            return response()->json([
+                'message' => 'Groupe modifié avec succès',
+            ], Response::HTTP_OK);
+        }
+
+        return response()->json([
+            'message' => 'Une erreur est survenue lors de la modification du groupe',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -98,14 +104,17 @@ class GroupController extends Controller
                         'message' => 'Groupe supprimé avec succès',
                     ], Response::HTTP_OK);
                 }
+
                 return response()->json([
                     'message' => 'Erreur lors de la suppression du groupe',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+
             return response()->json([
                 'message' => 'Erreur lors de la suppression des utilisateurs rattachés au groupe',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
         return response()->json([
             'message' => 'Erreur lors du détachement des événements liés au groupe',
         ], Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -131,20 +140,31 @@ class GroupController extends Controller
      */
     public function event(Group $group, Request $request): JsonResponse
     {
-        $event_id = ($request->input('event_id'));
+        $event_id = $request->event_id;
         if ($event_id !== null && $event_id) {
-            if ($group && $group !== null) {
+            if ($group !== null) {
                 $group->events()->attach($event_id);
                 $event = Event::find($event_id);
 
+                if ($event instanceof Collection) {
+                    $event = $event->first();
+                }
+
+                if ($event) {
+                    return response()->json([
+                        'message' => 'L\'événement ' . $event->name . ' a bien été lié au groupe ' . $group->name . '.',
+                    ], Response::HTTP_OK);
+                }
                 return response()->json([
-                    'message' => 'L\'événement ' . $event->name . ' a bien été lié au groupe ' . $group->name . '.',
-                ], Response::HTTP_OK);
+                    'message' => "L'événement n'a pas été trouvé.",
+                ], Response::HTTP_NOT_FOUND);
             }
+
             return response()->json([
                 'message' => 'Aucun groupe n\'a été trouvé pour l\'identifiant renseigné',
             ], Response::HTTP_NOT_FOUND);
         }
+
         return response()->json([
             'message' => 'Veuillez renseigner un événement dans la requète',
         ], Response::HTTP_BAD_REQUEST);

@@ -6,9 +6,11 @@ use App\Http\Resources\Image as ResourcesImage;
 use App\Models\Event;
 use App\Models\Image;
 use App\Utils\CacheHelper;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response as FacadesResponse;
 use Illuminate\Support\Facades\Validator;
@@ -41,40 +43,57 @@ class ImageController extends Controller
         $file = '';
         $validator = Validator::make($request->all(), Image::createRules());
 
+        $event = Event::find($request->input('event_id'));
+        if ($event instanceof Collection) {
+            $event = $event->first();
+        }
+
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            if ($file = $request->file('file')) {
-                $fileDestinationPath = $this->storageBasePath.Event::find($request->input('event_id'))->year.'/'.$this->normalizeEventName(Event::find($request->input('event_id'))->name).'/';
-                if (! File::exists($fileDestinationPath.$this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.$file->getClientOriginalName())) {
-                    $file->move('../'.$fileDestinationPath, $this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.$file->getClientOriginalName());
-                    if (
-                        $image = Image::create([
-                            'event_id' => $request->input('event_id'),
-                            'path' => $fileDestinationPath,
-                            'name' => $this->normalizeEventName(Event::find($request->input('event_id'))->name).'__'.pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-                            'extension' => pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION),
-                            'alt' => $request->input('alt'),
-                            'title' => $request->input('title'),
-                        ])
-                    ) {
-                        return response()->json([
-                            'message' => 'Image créée avec succès',
-                            'data' => CacheHelper::get($image)
-                        ], Response::HTTP_CREATED);
-                    }
-                    return response()->json([
-                        'message' => 'Erreur lors de la création de l\'image',
-                    ], Response::HTTP_INTERNAL_SERVER_ERROR);
-                }
-                return response()->json([
-                    'message' => 'L\'image existe déjà',
-                ], Response::HTTP_UNPROCESSABLE_ENTITY);
-            }
-            return response()->json([
-                'message' => 'Pas d\'image dans la requête',
-            ], Response::HTTP_BAD_REQUEST);
         }
+
+        if (!$event) {
+            return response()->json(['message' => "L'événement n'existe pas"], Response::HTTP_NOT_FOUND);
+        }
+
+        $file = $request->file('file');
+        if (!$file instanceof UploadedFile) {
+            return response()->json(['message' => "Plusieurs fichiers ont été envoyés"], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($file instanceof UploadedFile && $file->isValid() && is_string($event->name)) {
+            $fileDestinationPath = $this->storageBasePath . $event->year . '/' . $this->normalizeEventName($event->name) . '/';
+            if (!File::exists($fileDestinationPath . $this->normalizeEventName($event->name) . '__' . $file->getClientOriginalName())) {
+                $file->move('../' . $fileDestinationPath, $this->normalizeEventName($event->name) . '__' . $file->getClientOriginalName());
+                if (
+                    $image = Image::create([
+                        'event_id' => $request->event_id,
+                        'path' => $fileDestinationPath,
+                        'name' => $this->normalizeEventName($event->name) . '__' . pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                        'extension' => pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION),
+                        'alt' => $request->input('alt'),
+                        'title' => $request->input('title'),
+                    ])
+                ) {
+                    return response()->json([
+                        'message' => "Image créée avec succès",
+                        'data' => CacheHelper::get($image),
+                    ], Response::HTTP_CREATED);
+                }
+
+                return response()->json([
+                    'message' => "Erreur lors de la création de l'image",
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            return response()->json([
+                'message' => "L'image existe déjà",
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' => "Il n'y a pas d'image dans la requête ou elle est invalide",
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -101,55 +120,74 @@ class ImageController extends Controller
         $file = '';
         $validator = Validator::make($request->all(), Image::updateRules());
 
+        $event = Event::find($request->input('event_id'));
+        if ($event instanceof Collection) {
+            $event = $event->first();
+        }
+
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            if ($file = $request->file('file')) {
-                $path = storage_path().'../'.$image->path.$image->name.'.'.$image->extension;
-                if (File::exists($path)) {
-                    if (unlink($path)) {
-                        if (! File::exists($path)) {
-                            if (intval($request->input('event_id')) !== $image->event_id) {
-                                $image->update([
-                                    'event_id' => intval($request->input('event_id')),
-                                ]);
-                            }
-                            $fileDestinationPath = $this->storageBasePath.Event::find($image->event_id)->year.'/'.$this->normalizeEventName(Event::find($image->event_id)->name).'/';
-                            if (
-                                $image->update([
-                                    'path' => $fileDestinationPath,
-                                    'name' => $this->normalizeEventName(Event::find($image->event_id)->name).'__'.pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-                                    'extension' => pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION),
-                                    'alt' => $request->input('alt'),
-                                    'title' => $request->input('title'),
-                                ])
-                            ) {
-                                $file->move('storage/'.$fileDestinationPath, $image->name.'.'.$image->extension);
+        }
 
-                                return response()->json([
-                                    'message' => 'Image modifiée avec succès',
-                                ], Response::HTTP_OK);
-                            }
-                            return response()->json([
-                                'message' => "Erreur lors de la modification de l'image",
-                            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        if (!$event) {
+            return response()->json(['message' => "L'événement n'existe pas"], Response::HTTP_NOT_FOUND);
+        }
+
+        $file = $request->file('file');
+        if (!$file instanceof UploadedFile) {
+            return response()->json(['message' => "Plusieurs fichiers ont été envoyés"], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        if ($file instanceof UploadedFile && $file->isValid() && is_string($event->name)) {
+            $path = storage_path() . '../' . $image->path . $image->name . '.' . $image->extension;
+            if (File::exists($path)) {
+                if (unlink($path)) {
+                    if (!File::exists($path)) {
+                        if (intval($request->input('event_id')) !== $image->event_id) {
+                            $image->update([
+                                'event_id' => intval($request->input('event_id')),
+                            ]);
                         }
+                        $fileDestinationPath = $this->storageBasePath . $event->year . '/' . $this->normalizeEventName($event->name) . '/';
+                        if (
+                            $image->update([
+                                'path' => $fileDestinationPath,
+                                'name' => $this->normalizeEventName($event->name) . '__' . pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                                'extension' => pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION),
+                                'alt' => $request->input('alt'),
+                                'title' => $request->input('title'),
+                            ])
+                        ) {
+                            $file->move('storage/' . $fileDestinationPath, $image->name . '.' . $image->extension);
+
+                            return response()->json([
+                                'message' => 'Image modifiée avec succès',
+                            ], Response::HTTP_OK);
+                        }
+
                         return response()->json([
-                            'message' => "Erreur lors de la supression de l'image",
+                            'message' => "Erreur lors de la modification de l'image",
                         ], Response::HTTP_INTERNAL_SERVER_ERROR);
                     }
+
                     return response()->json([
-                        'message' => "Erreur lors de la supression de l'ancienne image",
+                        'message' => "Erreur lors de la supression de l'image",
                     ], Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
+
                 return response()->json([
-                    'message' => "Le fichier n'a pas été trouvé",
-                ], Response::HTTP_NOT_FOUND);
+                    'message' => "Erreur lors de la supression de l'ancienne image",
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
+
             return response()->json([
-                'error' => "Pas d'image dans la requête",
-            ], Response::HTTP_BAD_REQUEST);
+                'message' => "Le fichier n'a pas été trouvé",
+            ], Response::HTTP_NOT_FOUND);
         }
+
+        return response()->json([
+            'error' => "Pas d'image dans la requête",
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -160,18 +198,20 @@ class ImageController extends Controller
      */
     public function destroy(Image $image): JsonResponse
     {
-        $imageStoragePath = storage_path().'../'.$image->path;
-        $path = $imageStoragePath.$image->name.'.'.$image->extension;
+        $imageStoragePath = storage_path() . '../' . $image->path;
+        $path = $imageStoragePath . $image->name . '.' . $image->extension;
         if (File::exists($path)) {
             if (unlink($path) && $image->delete()) {
                 return response()->json([
                     'message' => 'Image supprimée avec succès',
                 ], Response::HTTP_OK);
             }
+
             return response()->json([
                 'message' => 'Erreur lors de la suppression de l\'image',
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
         return response()->json([
             'message' => 'Le fichier n\'a pas été trouvé',
         ], Response::HTTP_NOT_FOUND);
@@ -186,15 +226,16 @@ class ImageController extends Controller
     public function file(Image $image): JsonResponse
     {
         //php artisan storage:link before using this method
-        if ($file = public_path().'../../'.$image->path.$image->name.'.'.$image->extension) {
+        if ($file = public_path() . '../../' . $image->path . $image->name . '.' . $image->extension) {
             // $response = FacadesResponse::json(file_get_contents($file), 200);
             // $response->header('Content-Type', 'image/' . $image->extension);
             return response()->json([
                 'file' => file_get_contents($file),
             ], Response::HTTP_OK, [
-                'Content-Type' => 'image/'.$image->extension,
+                'Content-Type' => 'image/' . $image->extension,
             ]);
         }
+
         return response()->json([
             'message' => 'Le fichier n\'a pas été trouvé',
         ], Response::HTTP_NOT_FOUND);
@@ -209,9 +250,10 @@ class ImageController extends Controller
     public function download(Image $image): BinaryFileResponse | JsonResponse
     {
         //php artisan storage:link before using this method
-        if ($file = public_path().'../../'.$image->path.$image->name.'.'.$image->extension) {
+        if ($file = public_path() . '../../' . $image->path . $image->name . '.' . $image->extension) {
             return response()->download($file);
         }
+
         return response()->json([
             'message' => 'Le fichier n\'a pas été trouvé',
         ], Response::HTTP_NOT_FOUND);
@@ -236,7 +278,7 @@ class ImageController extends Controller
         $allSpecialChars = ['/', '\\', ':', ';', '!', '@', '#', '$', '%', '^', '*', '(', ')', '+', '=', '|', '{', '}', '[', ']', '"', "'", '<', '>', ',', '?', '~', '`', '&', ' ', '.'];
         $replace = array_combine($allSpecialChars, array_fill(0, count($allSpecialChars), '_'));
         $eventName = strtr($eventName, $replace);
-        $eventName = preg_replace('/_+/', '_', $eventName);
+        $eventName = (string)preg_replace('/_+/', '_', $eventName);
         $eventName = strtolower($eventName);
 
         return $eventName;

@@ -9,7 +9,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +26,8 @@ class AuthController extends Controller
     public function user(): ResourcesUser | JsonResponse
     {
         if ($user = Auth::user()) {
-            if ($toReturn = CacheHelper::get($user)) {
+            $toReturn = CacheHelper::get($user);
+            if ($toReturn && $toReturn instanceof ResourcesUser) {
                 return $toReturn;
             }
         }
@@ -40,11 +40,12 @@ class AuthController extends Controller
     /**
      * Method index
      *
-     * @return AnonymousResourceCollection
+     * @return AnonymousResourceCollection|JsonResponse
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): AnonymousResourceCollection | JsonResponse
     {
-        if ($toReturn = CacheHelper::get(User::all())) {
+        $toReturn = CacheHelper::get(User::all());
+        if ($toReturn && $toReturn instanceof AnonymousResourceCollection) {
             return $toReturn;
         }
 
@@ -66,11 +67,15 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
+            $password = "";
+            if (is_string($request->input('password'))) {
+                $password = (string)$request->input('password');
+            }
             $user = User::create([
                 'group_id' => $request->input('group_id'),
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
-                'password' => Hash::make($request->input('password')),
+                'password' => Hash::make($password),
                 'is_admin' => $request->input('is_admin'),
             ]);
 
@@ -89,7 +94,8 @@ class AuthController extends Controller
      */
     public static function show(User $user): ResourcesUser | JsonResponse
     {
-        if ($toReturn = CacheHelper::get($user)) {
+        $toReturn = CacheHelper::get($user);
+        if ($toReturn && $toReturn instanceof ResourcesUser) {
             return $toReturn;
         }
 
@@ -111,13 +117,16 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            if (! Auth::attempt($request->only('email', 'password', ), $request->input('remember'))) {
+            if (!Auth::attempt($request->only('email', 'password',), (bool)$request->remember)) {
                 return response()->json([
                     'message' => 'Erreur lors de la tentative de connexion',
                 ], Response::HTTP_UNAUTHORIZED);
             }
             $user = Auth::user();
-            $data = CacheHelper::get($user);
+            $data = null;
+            if ($user) {
+                $data = CacheHelper::get($user);
+            }
 
             return response()->json([
                 'message' => 'Connexion réussie!',
@@ -134,12 +143,17 @@ class AuthController extends Controller
     public function logout(): JsonResponse
     {
         $user = Auth::user();
-        Auth::guard('web')->logout();
-        $user->tokens()->delete();
+        if ($user) {
+            Auth::logout();
+            CacheHelper::forget($user);
 
+            return response()->json([
+                'message' => 'Déconnexion réussie!',
+            ], Response::HTTP_ACCEPTED);
+        }
         return response()->json([
-            'message' => 'Déconnexion réussie!',
-        ], Response::HTTP_ACCEPTED);
+            'message' => "L'utilisateur n'a pas été trouvé",
+        ], Response::HTTP_NOT_FOUND);
     }
 
     /**
@@ -151,7 +165,15 @@ class AuthController extends Controller
      */
     public function update(Request $request, User $user): JsonResponse
     {
-        if ($request->has('email') && $request->email === Auth::user()->email) {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => "L'utilisateur n'a pas été trouvé",
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($request->has('email') && $request->email === $user->email) {
             $request->request->remove('email');
         }
 
@@ -159,20 +181,19 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            if ($user->update($request->all())) {
-                $data = CacheHelper::get($user);
-
-                return response()->json([
-                    'message' => 'Modification réussie!',
-                    'data' => $data,
-                ], Response::HTTP_ACCEPTED);
-            } else {
-                return response()->json([
-                    'message' => 'Erreur lors de la modification',
-                ], Response::HTTP_UNAUTHORIZED);
-            }
         }
+
+        if ($user->update($request->all())) {
+
+            $data = CacheHelper::get($user);
+            return response()->json([
+                'message' => 'Modification réussie!',
+                'data' => $data,
+            ], Response::HTTP_ACCEPTED);
+        }
+        return response()->json([
+            'message' => 'Erreur lors de la modification',
+        ], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
@@ -184,12 +205,15 @@ class AuthController extends Controller
     public function updateCurrent(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $oldUser = clone $user;
+        $oldUser = null;
+        if ($user) {
+            $oldUser = clone $user;
+        }
 
-        if ($request->has('email') && $request->email === Auth::user()->email) {
+        if ($user && $request->has('email') && $request->email === $user->email) {
             $request->request->remove('email');
         }
-        if ($request->has('group')) {
+        if ($user && $request->has('group')) {
             $request->request->remove('group');
         }
 
@@ -198,7 +222,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            if ($user->update($request->only('name', 'email')) && $oldUser) {
+            if ($user && $user->update($request->only('name', 'email')) && $oldUser) {
                 $data = CacheHelper::update($oldUser, $user);
 
                 return response()->json([
@@ -242,7 +266,7 @@ class AuthController extends Controller
     {
         if ($user === null) {
             $user = Auth::user();
-            if ($user->is_admin) {
+            if ($user && $user->is_admin) {
                 return true;
             }
         } else {

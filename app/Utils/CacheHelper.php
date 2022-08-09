@@ -17,9 +17,8 @@ class CacheHelper
     /**
      * Method get
      *
-     * @param Model|Collection<int,Model> $data [Data to cache]
-     * @param int $cacheTime [Time in seconds]
-     *
+     * @param  Model|Collection<int,Model>  $data [Data to cache]
+     * @param  int  $cacheTime [Time in seconds]
      * @return JsonResource|AnonymousResourceCollection|null
      */
     public static function get(Model | Collection $data, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
@@ -29,17 +28,21 @@ class CacheHelper
         if ($toReturn = Cache::remember(self::key($data), $cacheTime, function () use ($resource): JsonResource | AnonymousResourceCollection {
             return $resource;
         })) {
-            return $toReturn;
+            if ($toReturn instanceof JsonResource) {
+                return $toReturn;
+            }
+            if ($toReturn instanceof AnonymousResourceCollection) {
+                return $toReturn;
+            }
+            return null;
         }
-
         return null;
     }
 
     /**
      * Method delete
      *
-     * @param Model|Collection<int,Model>  $toForget [Data to forget]
-     *
+     * @param  Model|Collection<int,Model>  $toForget [Data to forget]
      * @return bool
      */
     public static function delete(Model | Collection $toForget): bool
@@ -73,8 +76,7 @@ class CacheHelper
     /**
      * Method forget
      *
-     * @param Model|Collection<int,Model> $toForget [Data to forget]
-     *
+     * @param  Model|Collection<int,Model>  $toForget [Data to forget]
      * @return bool
      */
     public static function forget(Model | Collection $toForget): bool
@@ -85,10 +87,9 @@ class CacheHelper
     /**
      * Method update
      *
-     * @param Model|Collection<int,Model> $oldData [Old data]
-     * @param Model|Collection<int,Model> $updatedData [Updated data]
-     * @param int $cacheTime [Time in seconds]
-     *
+     * @param  Model|Collection<int,Model>  $oldData [Old data]
+     * @param  Model|Collection<int,Model>  $updatedData [Updated data]
+     * @param  int  $cacheTime [Time in seconds]
      * @return JsonResource|AnonymousResourceCollection|null
      */
     public static function update(Model | Collection $oldData, Model | Collection $updatedData, int $cacheTime = null): JsonResource | AnonymousResourceCollection | null
@@ -103,30 +104,25 @@ class CacheHelper
     /**
      * Method key
      *
-     * @param string|Model|Collection<int,Model>|array<int,Model> $data [Data to get key]
-     *
-     * @return string|null
+     * @param  string|Model|Collection<int,Model>|array<int,Model>  $data [Data to get key]
+     * @return string
      */
-    public static function key(string | Model | Collection | array $data): string | null
+    public static function key(string | Model | Collection | array $data): string
     {
-        if (is_string($data)) {
-            return $data;
-        } elseif ($data instanceof Model) {
+        if ($data instanceof Model) {
             return $data->getTable().'_'.$data->id;
         } elseif ($data instanceof Collection) {
             return $data->first()->getTable();
         } elseif (is_array($data)) {
             return $data[0]->getTable();
         }
-
-        return null;
+        return $data;
     }
 
     /**
      * Method class
      *
-     * @param Model|Collection<int,Model> $data [Data to get class]
-     *
+     * @param  Model|Collection<int,Model>  $data [Data to get class]
      * @return string
      */
     public static function class(Model | Collection $data): string
@@ -135,14 +131,13 @@ class CacheHelper
             return get_class($data);
         }
 
-        return get_class($data->first());
+        return get_class((object)$data->first());
     }
 
     /**
      * Method resource
      *
-     * @param Model|Collection<int,Model> $data [Data to get resource]
-     *
+     * @param  Model|Collection<int,Model>  $data [Data to get resource]
      * @return JsonResource|AnonymousResourceCollection
      */
     public static function resource(Model | Collection $data): JsonResource | AnonymousResourceCollection
@@ -155,8 +150,7 @@ class CacheHelper
     /**
      * Method has
      *
-     * @param string|Model|Collection<int,Model>|array<int,Model> $data [Data to check]
-     *
+     * @param  string|Model|Collection<int,Model>|array<int,Model>  $data [Data to check]
      * @return bool
      */
     public static function has(string | Model | Collection | array $data): bool

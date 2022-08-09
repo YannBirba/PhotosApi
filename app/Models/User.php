@@ -124,7 +124,7 @@ class User extends Authenticatable
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
+            'email' => 'email:dns|max:255|min:3|unique:users',
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -139,7 +139,7 @@ class User extends Authenticatable
     {
         return [
             'name' => 'string|max:255|min:3',
-            'email' => 'email|max:255|min:3|unique:users,email,' . auth()->user()->id,
+            'email' => 'email:dns|max:255|min:3|unique:users',
             'is_active' => 'boolean',
         ];
     }
@@ -152,7 +152,7 @@ class User extends Authenticatable
     public static function loginRules(): array
     {
         return [
-            'email' => 'required|email|max:255|min:3',
+            'email' => 'required|email:dns|max:255|min:3',
             'password' => 'required|string',
             'remember' => 'required|boolean',
         ];
@@ -161,8 +161,7 @@ class User extends Authenticatable
     /**
      * Method resource
      *
-     * @param User|Collection<int,User> $data [Date to be used to create the resource]
-     *
+     * @param  User|Collection<int,User>  $data [Date to be used to create the resource]
      * @return UserResource|AnonymousResourceCollection
      */
     public static function resource(User | Collection $data): UserResource | AnonymousResourceCollection

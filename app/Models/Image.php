@@ -104,8 +104,7 @@ class Image extends Model
     /**
      * Method resource
      *
-     * @param Image|Collection<int,Image> $data [Data to be used to create the resource]
-     *
+     * @param  Image|Collection<int,Image>  $data [Data to be used to create the resource]
      * @return ImageResource|AnonymousResourceCollection
      */
     public static function resource(Image | Collection $data): ImageResource | AnonymousResourceCollection

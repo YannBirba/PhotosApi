@@ -139,8 +139,7 @@ class Event extends Model
     /**
      * Method resource
      *
-     * @param Event|Collection<int,Event> $data [Data to be used to create the resource]
-     *
+     * @param  Event|Collection<int,Event>  $data [Data to be used to create the resource]
      * @return EventResource|AnonymousResourceCollection
      */
     public static function resource(Event | Collection $data): EventResource | AnonymousResourceCollection

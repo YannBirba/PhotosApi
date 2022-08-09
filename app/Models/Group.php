@@ -85,8 +85,7 @@ class Group extends Model
     /**
      * Method resource
      *
-     * @param Group|Collection<int,Group> $data [Data to be used to create the resource]
-     *
+     * @param  Group|Collection<int,Group>  $data [Data to be used to create the resource]
      * @return GroupResource|AnonymousResourceCollection
      */
     public static function resource(Group | Collection $data): GroupResource | AnonymousResourceCollection

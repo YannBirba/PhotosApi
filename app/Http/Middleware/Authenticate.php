@@ -16,7 +16,7 @@ class Authenticate extends Middleware
      */
     protected function redirectTo($request)
     {
-        if (! $request->expectsJson()) {
+        if (!$request->expectsJson()) {
             return route('api/login');
         }
     }
@@ -26,7 +26,7 @@ class Authenticate extends Middleware
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  array<string> ...$guards
+     * @param  array<string>  ...$guards
      * @return mixed
      *
      * @throws \Illuminate\Auth\AuthenticationException
@@ -34,7 +34,9 @@ class Authenticate extends Middleware
     public function handle($request, Closure $next, ...$guards)
     {
         if ($jwt = $request->cookie('photosapi_session')) {
-            $request->headers->set('Authorization', 'Bearer '.$jwt);
+            if (is_string($jwt)) {
+                $request->headers->set('Authorization', 'Bearer ' . $jwt);
+            }
         }
         $this->authenticate($request, $guards);
 
@@ -53,7 +55,9 @@ class Authenticate extends Middleware
     protected function unauthenticated($request, array $guards)
     {
         throw new AuthenticationException(
-            'Afin d\'utiliser cette fonctionnalité, merci de vous connecter', $guards, $this->redirectTo($request)
+            'Afin d\'utiliser cette fonctionnalité, merci de vous connecter',
+            $guards,
+            $this->redirectTo($request)
         );
     }
 }

@@ -8,9 +8,11 @@ use App\Models\Event;
 use App\Models\Group;
 use App\Models\Image;
 use App\Utils\CacheHelper;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,16 +32,32 @@ class EventController extends Controller
     /**
      * return all event of the user group from the actual year group_id come from group_event pivot table
      *
-     * @return AnonymousResourceCollection
+     * @return ResourceCollection|JsonResponse
      */
-    public function usergroupindex(): AnonymousResourceCollection
+    public function usergroupindex(): ResourceCollection | JsonResponse
     {
         $user = Auth::user();
-        $group_id = $user->group_id;
-        $group = Group::find($group_id);
-        $events = $group->events;
+        if ($user) {
+            $group = $user->group;
+            if ($group && $group instanceof Group) {
+                $events = $group->events;
 
-        return $events->sortByDesc('start_date')->values();
+                if ($events instanceof Event) {
+                    return $events->sortByDesc('start_date')->values();
+                }
+
+                return response()->json([
+                    'message' => "Aucun événement n'a été trouvé",
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            return response()->json([
+                'message' => "Aucun groupe n'a été trouvé",
+            ], Response::HTTP_NOT_FOUND);
+        }
+        return response()->json([
+            'message' => "L'utilisateur n'a pas été trouvé",
+        ], Response::HTTP_NOT_FOUND);
     }
 
     /**
@@ -51,19 +69,21 @@ class EventController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), Event::createRules());
+
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } else {
-            if ($event = Event::create($request->all())) {
-                return response()->json([
-                    'message' => 'Evénement créé avec succès',
-                    'data' => CacheHelper::get($event)
-                ], Response::HTTP_CREATED);
-            }
-            return response()->json([
-                'message' => 'Erreur lors de la création de l\'evénement',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        if ($event = Event::create($request->all())) {
+            return response()->json([
+                'message' => 'Evénement créé avec succès',
+                'data' => CacheHelper::get($event),
+            ], Response::HTTP_CREATED);
+        }
+
+        return response()->json([
+            'message' => 'Erreur lors de la création de l\'evénement',
+        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -114,10 +134,12 @@ class EventController extends Controller
             return response()->json(
                 [
                     'message' => 'Impossible de supprimer l\'événement car il possède au moins image',
-                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
 
-        if ($event->groups->count() > 0) {
+        if ($event->groups instanceof Collection && $event->groups->count() > 0) {
             if ($event->groups()->detach()) {
             } else {
                 return response()->json([
@@ -157,22 +179,34 @@ class EventController extends Controller
      */
     public function group(Event $event, Request $request): JsonResponse
     {
-        $group_id = ($request->input('group_id'));
+        $group_id = $request->group_id;
         if ($group_id !== null && $group_id) {
-            if ($event && $event !== null) {
+            if ($event) {
                 $event->groups()->attach($group_id);
                 $group = Group::find($group_id);
 
+                if ($group instanceof Collection) {
+                    $group = $group->first();
+                }
+
+                if ($group && $group instanceof Group) {
+                    return response()->json([
+                        'message' => 'Le groupe ' . $group->name . 'a bien été lié à l\'événement ' . $event->name . '.',
+                    ], Response::HTTP_OK);
+                }
+
                 return response()->json([
-                    'message' => 'Le groupe '.$group->name.'a bien été lié à l\'événement '.$event->name.'.',
-                ], Response::HTTP_OK);
+                    'message' => "Le groupe n'a pas été trouvé",
+                ], Response::HTTP_NOT_FOUND);
             }
+
             return response()->json([
-                'message' => 'Aucun événement n\'a été trouvé pour l\'identifiant renseigné',
+                'message' => "Aucun événement n'a été trouvé pour l'identifiant renseigné",
             ], Response::HTTP_NOT_FOUND);
         }
+
         return response()->json([
-            'message' => 'Veuillez renseigner un groupe dans la requète',
+            'message' => "Veuillez renseigner un groupe dans la requète",
         ], Response::HTTP_BAD_REQUEST);
     }
 
