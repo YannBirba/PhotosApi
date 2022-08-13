@@ -49,7 +49,8 @@ class RouteServiceProvider extends ServiceProvider
              * @var User $user
              */
             $user = optional($request->user());
-            $ip = (string)$request->ip();
+            $ip = (string) $request->ip();
+
             return Limit::perMinute(60)->by($user->id ?: $ip);
         });
     }

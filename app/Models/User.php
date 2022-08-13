@@ -64,6 +64,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'is_active',
     ];
 
     /**
@@ -93,6 +94,27 @@ class User extends Authenticatable
      */
     public static function createRules(): array
     {
+        if (env('APP_ENV') === 'production') {
+            return [
+                'group_id' => 'required|integer',
+                'name' => 'required|string|max:255|min:3',
+                'email' => 'required|string|email:dns|max:255|unique:users',
+                'password' => [
+                    'required',
+                    'confirmed',
+                    Password::min(8)
+                        ->letters()
+                        ->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                        ->uncompromised(),
+
+                ],
+                'is_admin' => 'required|boolean',
+                'is_active' => 'required|boolean',
+            ];
+        }
+
         return [
             'group_id' => 'required|integer',
             'name' => 'required|string|max:255|min:3',
@@ -100,14 +122,8 @@ class User extends Authenticatable
             'password' => [
                 'required',
                 'confirmed',
-                env('APP_ENV') === 'production' ?
-                    (Password::min(8)
-                        ->letters()
-                        ->mixedCase()
-                        ->numbers()
-                        ->symbols()
-                        ->uncompromised()) : 'required|string',
-
+                'required',
+                'string',
             ],
             'is_admin' => 'required|boolean',
             'is_active' => 'required|boolean',
@@ -121,10 +137,20 @@ class User extends Authenticatable
      */
     public static function updateRules(): array
     {
+        if (env('APP_ENV') === 'production') {
+            return [
+                'group_id' => 'integer',
+                'name' => 'string|max:255|min:3',
+                'email' => 'email:dns|max:255|min:3|unique:users',
+                'is_admin' => 'boolean',
+                'is_active' => 'boolean',
+            ];
+        }
+
         return [
             'group_id' => 'integer',
             'name' => 'string|max:255|min:3',
-            'email' => 'email:dns|max:255|min:3|unique:users',
+            'email' => 'email|max:255|min:3|unique:users',
             'is_admin' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -137,9 +163,17 @@ class User extends Authenticatable
      */
     public static function updateCurrentRules(): array
     {
+        if (env('APP_ENV') === 'production') {
+            return [
+                'name' => 'string|max:255|min:3',
+                'email' => 'email:dns|max:255|min:3|unique:users',
+                'is_active' => 'boolean',
+            ];
+        }
+
         return [
             'name' => 'string|max:255|min:3',
-            'email' => 'email:dns|max:255|min:3|unique:users',
+            'email' => 'email|max:255|min:3|unique:users',
             'is_active' => 'boolean',
         ];
     }
@@ -151,8 +185,16 @@ class User extends Authenticatable
      */
     public static function loginRules(): array
     {
+        if (env('APP_ENV') === 'production') {
+            return [
+                'email' => 'required|email:dns|max:255|min:3',
+                'password' => 'required|string',
+                'remember' => 'required|boolean',
+            ];
+        }
+
         return [
-            'email' => 'required|email:dns|max:255|min:3',
+            'email' => 'required|email|max:255|min:3',
             'password' => 'required|string',
             'remember' => 'required|boolean',
         ];

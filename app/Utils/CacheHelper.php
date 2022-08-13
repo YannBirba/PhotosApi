@@ -34,8 +34,10 @@ class CacheHelper
             if ($toReturn instanceof AnonymousResourceCollection) {
                 return $toReturn;
             }
+
             return null;
         }
+
         return null;
     }
 
@@ -116,6 +118,7 @@ class CacheHelper
         } elseif (is_array($data)) {
             return $data[0]->getTable();
         }
+
         return $data;
     }
 
@@ -131,7 +134,7 @@ class CacheHelper
             return get_class($data);
         }
 
-        return get_class((object)$data->first());
+        return get_class((object) $data->first());
     }
 
     /**

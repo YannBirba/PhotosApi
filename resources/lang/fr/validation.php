@@ -153,5 +153,6 @@ return [
         'path' => 'chemin',
         'extension' => 'extension',
         'password_confirmation' => 'confirmation du mot de passe',
+        'is_active' => 'est actif',
     ],
 ];

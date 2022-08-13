@@ -43,7 +43,7 @@ class GroupController extends Controller
         if ($group = Group::create($request->all())) {
             return response()->json([
                 'message' => 'Groupe créé avec succès',
-                'data' => CacheHelper::get($group)
+                'data' => CacheHelper::get($group),
             ], Response::HTTP_CREATED);
         }
 
@@ -77,7 +77,7 @@ class GroupController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
-        
+
         if ($group->update($request->all())) {
             return response()->json([
                 'message' => 'Groupe modifié avec succès',
@@ -152,9 +152,10 @@ class GroupController extends Controller
 
                 if ($event) {
                     return response()->json([
-                        'message' => 'L\'événement ' . $event->name . ' a bien été lié au groupe ' . $group->name . '.',
+                        'message' => 'L\'événement '.$event->name.' a bien été lié au groupe '.$group->name.'.',
                     ], Response::HTTP_OK);
                 }
+
                 return response()->json([
                     'message' => "L'événement n'a pas été trouvé.",
                 ], Response::HTTP_NOT_FOUND);

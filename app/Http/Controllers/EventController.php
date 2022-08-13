@@ -55,6 +55,7 @@ class EventController extends Controller
                 'message' => "Aucun groupe n'a été trouvé",
             ], Response::HTTP_NOT_FOUND);
         }
+
         return response()->json([
             'message' => "L'utilisateur n'a pas été trouvé",
         ], Response::HTTP_NOT_FOUND);
@@ -191,7 +192,7 @@ class EventController extends Controller
 
                 if ($group && $group instanceof Group) {
                     return response()->json([
-                        'message' => 'Le groupe ' . $group->name . 'a bien été lié à l\'événement ' . $event->name . '.',
+                        'message' => 'Le groupe '.$group->name.'a bien été lié à l\'événement '.$event->name.'.',
                     ], Response::HTTP_OK);
                 }
 

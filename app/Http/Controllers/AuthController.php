@@ -59,7 +59,8 @@ class AuthController extends Controller
      *
      * @return AnonymousResourceCollection
      */
-    public function indexWithTrashed(): AnonymousResourceCollection | JsonResponse{
+    public function indexWithTrashed(): AnonymousResourceCollection | JsonResponse
+    {
         $toReturn = CacheHelper::get(User::withTrashed()->get());
         if ($toReturn && $toReturn instanceof AnonymousResourceCollection) {
             return $toReturn;
@@ -78,14 +79,14 @@ class AuthController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->only(['group_id', 'name', 'email', 'password', 'password_confirmation', 'is_admin']), User::createRules());
+        $validator = Validator::make($request->only(['group_id', 'name', 'email', 'password', 'password_confirmation', 'is_admin', 'is_active']), User::createRules());
 
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
             $password = "";
             if (is_string($request->input('password'))) {
-                $password = (string)$request->input('password');
+                $password = (string) $request->input('password');
             }
             $user = User::create([
                 'group_id' => $request->input('group_id'),
@@ -93,6 +94,7 @@ class AuthController extends Controller
                 'email' => $request->input('email'),
                 'password' => Hash::make($password),
                 'is_admin' => $request->input('is_admin'),
+                'is_active' => $request->input('is_active'),
             ]);
 
             return response()->json([
@@ -133,7 +135,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => $validator->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
         } else {
-            if (!Auth::attempt($request->only('email', 'password',), (bool)$request->remember)) {
+            if (! Auth::attempt($request->only('email', 'password', ), (bool) $request->remember)) {
                 return response()->json([
                     'message' => 'Erreur lors de la tentative de connexion',
                 ], Response::HTTP_UNAUTHORIZED);
@@ -145,7 +147,7 @@ class AuthController extends Controller
             }
 
             return response()->json([
-                'message' => 'Connexion réussie!',
+                'message' => 'Connexion réussie !',
                 'data' => $data,
             ], Response::HTTP_ACCEPTED);
         }
@@ -164,9 +166,10 @@ class AuthController extends Controller
             CacheHelper::forget($user);
 
             return response()->json([
-                'message' => 'Déconnexion réussie!',
+                'message' => 'Déconnexion réussie !',
             ], Response::HTTP_ACCEPTED);
         }
+
         return response()->json([
             'message' => "L'utilisateur n'a pas été trouvé",
         ], Response::HTTP_NOT_FOUND);
@@ -183,7 +186,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'message' => "L'utilisateur n'a pas été trouvé",
             ], Response::HTTP_NOT_FOUND);
@@ -200,13 +203,14 @@ class AuthController extends Controller
         }
 
         if ($user->update($request->all())) {
-
             $data = CacheHelper::get($user);
+
             return response()->json([
                 'message' => 'Modification réussie!',
                 'data' => $data,
-            ], Response::HTTP_ACCEPTED);
+            ], Response::HTTP_OK);
         }
+
         return response()->json([
             'message' => 'Erreur lors de la modification',
         ], Response::HTTP_UNAUTHORIZED);
@@ -244,7 +248,7 @@ class AuthController extends Controller
                 return response()->json([
                     'message' => 'Modification réussie!',
                     'data' => $data,
-                ], Response::HTTP_ACCEPTED);
+                ], Response::HTTP_OK);
             } else {
                 return response()->json([
                     'message' => 'Erreur lors de la modification',
@@ -254,47 +258,60 @@ class AuthController extends Controller
     }
 
     /**
-     * Method destroy
+     * Method trash
      *
      * @param  User  $user [User to delete]
      * @return JsonResponse
      */
-    public function destroy(User $user): JsonResponse
+    public function trash(User $user): JsonResponse
     {
         if ($user->delete() && CacheHelper::delete($user)) {
             return response()->json([
                 'message' => 'Suppression réussie!',
             ], Response::HTTP_OK);
-        } else {
-            return response()->json([
-                'message' => 'Erreur lors de la suppression',
-            ], Response::HTTP_UNAUTHORIZED);
         }
+
+        return response()->json([
+            'message' => 'Erreur lors de la suppression',
+        ], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
-     * Method permanentDestroy
+     * Method destroy
      *
-     * @param User $user [explicite description]
-     *
+     * @param  int  $user_id [explicite description]
      * @return JsonResponse
      */
-    public function permanentDestroy(User $user): JsonResponse
+    public function destroy(int $user_id): JsonResponse
     {
-        if ($user->forceDelete() && CacheHelper::delete($user)) {
+        $user = User::withTrashed()
+            ->where('id', $user_id)
+            ->first();
+
+        if ($user && $user->forceDelete() && CacheHelper::delete($user)) {
             return response()->json([
                 'message' => 'Suppression réussie!',
             ], Response::HTTP_OK);
-        } else {
-            return response()->json([
-                'message' => 'Erreur lors de la suppression',
-            ], Response::HTTP_UNAUTHORIZED);
         }
+
+        return response()->json([
+            'message' => 'Erreur lors de la suppression',
+        ], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function restore(User $user): JsonResponse
+    /**
+     * Method restore
+     *
+     * @param  int  $user_id [explicite description]
+     * @return JsonResponse
+     */
+    public function restore(int $user_id): JsonResponse
     {
-        if ($user->trashed() && $user->restore() && CacheHelper::get($user)) {
+        $user = User::onlyTrashed()
+            ->where('id', $user_id)
+            ->first();
+
+        if ($user && $user->trashed() && $user->restore() && CacheHelper::get($user)) {
             return response()->json([
                 'message' => 'Restauration réussie!',
             ], Response::HTTP_OK);
