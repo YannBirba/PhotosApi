@@ -311,9 +311,10 @@ class AuthController extends Controller
             ->where('id', $user_id)
             ->first();
 
-        if ($user && $user->trashed() && $user->restore() && CacheHelper::get($user)) {
+        if ($user && $user->trashed() && $user->restore() && $data = CacheHelper::get($user)) {
             return response()->json([
                 'message' => 'Restauration réussie!',
+                'data' => $data,
             ], Response::HTTP_OK);
         } else {
             return response()->json([
